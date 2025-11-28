@@ -1,0 +1,3116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNS Park View FC — Coaching System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            /* Light theme variables */
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --accent: #0d6efd;
+            --success: #198754;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --border-radius: 16px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+            --glass: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.18);
+        }
+
+        .dark-theme {
+            /* Dark theme variables */
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-card: #252525;
+            --text-primary: #f8f9fa;
+            --text-secondary: #adb5bd;
+            --accent: #4dabf7;
+            --success: #51cf66;
+            --warning: #ffd43b;
+            --danger: #ff6b6b;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: var(--transition);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header & Navigation */
+        header {
+            background-color: var(--bg-secondary);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 30px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), #6f42c1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            background: var(--bg-card);
+            padding: 8px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+
+        .nav-link.active {
+            background-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-primary);
+            background: var(--bg-card);
+            box-shadow: var(--shadow);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-primary);
+            background: var(--bg-card);
+            box-shadow: var(--shadow);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 80px;
+            left: 0;
+            width: 100%;
+            background-color: var(--bg-secondary);
+            box-shadow: var(--shadow);
+            z-index: 99;
+            padding: 20px;
+            flex-direction: column;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .mobile-menu.active {
+            display: flex;
+        }
+
+        .mobile-nav-link {
+            padding: 16px 20px;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-card);
+            box-shadow: var(--shadow);
+        }
+
+        .mobile-nav-link.active {
+            background-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        }
+
+        /* Main Content */
+        main {
+            padding: 0 0 30px 0;
+        }
+
+        .module {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .module.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            overflow: auto;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .dark-theme .card:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: #212529;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--text-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Attendance Module */
+        .attendance-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-present .stat-value {
+            color: var(--success);
+        }
+
+        .stat-absent .stat-value {
+            color: var(--danger);
+        }
+
+        .stat-late .stat-value {
+            color: var(--warning);
+        }
+
+        .player-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .player-card {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            text-align: center;
+        }
+
+        .player-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .player-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #6f42c1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.75rem;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .player-name {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .player-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            width: 100%;
+        }
+
+        .status-present {
+            background-color: rgba(25, 135, 84, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(25, 135, 84, 0.3);
+        }
+
+        .status-absent {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .status-late {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .status-none {
+            background-color: rgba(108, 117, 125, 0.15);
+            color: var(--text-secondary);
+            border: 1px solid rgba(108, 117, 125, 0.3);
+        }
+
+        .add-player-form {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .form-control {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--text-secondary);
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        /* Timer Module */
+        .timer-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .timer-main-card {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 992px) {
+            .timer-main-card {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .timer-header {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .timer-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        .current-session-info {
+            background: linear-gradient(135deg, var(--accent), #6f42c1);
+            color: white;
+            padding: 24px;
+            border-radius: var(--border-radius);
+            margin: 20px 0px;
+        }
+
+        .session-title-large {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .session-description {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .total-timer-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .total-timer-time {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--accent);
+        }
+
+        .session-timer-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .session-timer-time {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: rgba(108, 117, 125, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #6f42c1);
+            width: 0%;
+            transition: width 1s linear;
+            border-radius: 5px;
+        }
+
+        .session-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .session-item {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+
+        @media (min-width: 768px) {
+            .session-item {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                gap: 0;
+            }
+        }
+
+        .session-item.active {
+            border-left: 4px solid var(--accent);
+            background: rgba(13, 110, 253, 0.05);
+        }
+
+        .session-info {
+            flex: 1;
+        }
+
+        .session-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .session-desc {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .session-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            .session-controls {
+                justify-content: flex-end;
+            }
+        }
+
+        .time-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .time-input {
+            width: 60px;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--text-secondary);
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        /* Dashboard Module */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 992px) {
+            .dashboard-container {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .players-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .players-table th,
+        .players-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(108, 117, 125, 0.2);
+        }
+
+        .players-table th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+        }
+
+        .metric-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .metric-bar {
+            flex: 1;
+            height: 6px;
+            background-color: rgba(108, 117, 125, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .metric-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #6f42c1);
+        }
+
+        .player-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(108, 117, 125, 0.2);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider-value {
+            width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-4 {
+            margin-top: 24px;
+        }
+
+        .mb-4 {
+            margin-bottom: 24px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .player-list {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+
+            .add-player-form {
+                flex-direction: column;
+            }
+
+            .session-timer-time {
+                font-size: 2.5rem;
+            }
+
+            .total-timer-time {
+                font-size: 2rem;
+            }
+
+            .btn-group {
+                justify-content: center;
+            }
+
+            .btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <div class="navbar">
+                <div class="logo">
+                    <div class="logo-icon">TNS</div>
+                    <div class="logo-text">
+                        <h1>TNS Park View FC</h1>
+                        <p>Official Training & Player Management</p>
+                    </div>
+                </div>
+                <div class="nav-links">
+                    <div class="nav-link active" data-module="attendance">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
+                                stroke="currentColor" stroke-width="2" />
+                            <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z"
+                                stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        Attendance
+                    </div>
+                    <div class="nav-link" data-module="timer">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 8V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path
+                                d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                                stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        Training Timer
+                    </div>
+                    <div class="nav-link" data-module="dashboard">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path
+                                d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path
+                                d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path
+                                d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Players Dashboard
+                    </div>
+                </div>
+                <div class="nav-controls">
+                    <button class="theme-toggle" id="themeToggle">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M12 2V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M12 20V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M4.93 4.93L6.34 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M17.66 17.66L19.07 19.07" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M2 12H4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M20 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M6.34 17.66L4.93 19.07" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M19.07 4.93L17.66 6.34" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 12H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M3 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-nav-link active" data-module="attendance">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z"
+                        stroke="currentColor" stroke-width="2" />
+                    <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor"
+                        stroke-width="2" />
+                </svg>
+                Attendance
+            </div>
+            <div class="mobile-nav-link" data-module="timer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 8V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <path
+                        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                        stroke="currentColor" stroke-width="2" />
+                </svg>
+                Training Timer
+            </div>
+            <div class="mobile-nav-link" data-module="dashboard">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                        d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                        d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                        d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Players Dashboard
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Attendance Module -->
+        <section id="attendance" class="module active">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Daily Team Attendance</h2>
+                    <div id="currentDateTime" class="text-secondary"></div>
+                </div>
+
+                <div class="attendance-stats">
+                    <div class="stat-card stat-present">
+                        <div class="stat-value" id="presentCount">0</div>
+                        <div class="stat-label">Present</div>
+                    </div>
+                    <div class="stat-card stat-absent">
+                        <div class="stat-value" id="absentCount">0</div>
+                        <div class="stat-label">Absent</div>
+                    </div>
+                    <div class="stat-card stat-late">
+                        <div class="stat-value" id="lateCount">0</div>
+                        <div class="stat-label">Late</div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="exportPdf">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 16L12 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M9 11L12 8L15 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <path d="M8 20H16C17.1046 20 18 19.1046 18 18V15" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                            <path
+                                d="M16 4H8C6.89543 4 6 4.89543 6 6V14C6 15.1046 6.89543 16 8 16H18C19.1046 16 20 15.1046 20 14V10"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Export PDF
+                    </button>
+                    <button class="btn btn-outline" id="exportText">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 12H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M9 16H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path
+                                d="M4 6H20C21.1046 6 22 6.89543 22 8V16C22 17.1046 21.1046 18 20 18H4C2.89543 18 2 17.1046 2 16V8C2 6.89543 2.89543 6 4 6Z"
+                                stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        Export Text
+                    </button>
+                    <button class="btn btn-outline" id="copyClipboard">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M8 5H6C4.89543 5 4 5.89543 4 7V19C4 20.1046 4.89543 21 6 21H16C17.1046 21 18 20.1046 18 19V17"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M16 5H18C19.1046 5 20 5.89543 20 7V11" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                            <path
+                                d="M8 5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5C16 6.10457 15.1046 7 14 7H10C8.89543 7 8 6.10457 8 5Z"
+                                stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        Copy to Clipboard
+                    </button>
+                    <button class="btn btn-danger" id="clearAttendance">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M3 7H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M10 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M8 7V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V7"
+                                stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        Clear Today
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">Player List</h3>
+                <div class="player-list" id="playerList">
+                    <!-- Player cards will be generated here -->
+                </div>
+
+                <div class="add-player-form">
+                    <input type="text" class="form-control" id="newPlayerName" placeholder="Enter player name">
+                    <button class="btn btn-primary" id="addPlayerBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Add Player
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Training Timer Module -->
+        <section id="timer" class="module">
+            <div class="timer-container">
+                <div class="card">
+                    <div class="timer-header">
+                        <h2 class="card-title">Training Timer (PulseCoach)</h2>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="startTraining">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 5V19L19 12L8 5Z" fill="currentColor" />
+                                </svg>
+                                Start Training
+                            </button>
+                            <button class="btn btn-warning" id="pauseResume" disabled>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 4H10V20H6V4Z" fill="currentColor" />
+                                    <path d="M14 4H18V20H14V4Z" fill="currentColor" />
+                                </svg>
+                                Pause
+                            </button>
+                            <button class="btn btn-outline" id="skipSession" disabled>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 4H9V20H5V4Z" fill="currentColor" />
+                                    <path d="M10 12L18 6V18L10 12Z" fill="currentColor" />
+                                </svg>
+                                Skip Session
+                            </button>
+                            <button class="btn btn-success" id="addSessionBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                                Add Session
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="current-session-info" id="currentSessionInfo">
+                        <div class="session-title-large" id="currentSessionTitle">No Active Session</div>
+                        <div class="session-description" id="currentSessionDescription">Start training to begin the
+                            session plan</div>
+                    </div>
+
+                    <div class="timer-main-card">
+                        <div class="session-timer-display">
+                            <div>Current Session</div>
+                            <div class="session-timer-time" id="sessionTimerDisplay">00:00</div>
+                            <div class="progress-container">
+                                <div class="progress-label">
+                                    <span>Session Progress</span>
+                                    <span id="sessionProgress">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="sessionProgressFill"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="total-timer-display">
+                            <div>Total Training Time</div>
+                            <div class="total-timer-time" id="totalTimerDisplay">00:00</div>
+                            <div class="progress-container">
+                                <div class="progress-label">
+                                    <span>Total Progress</span>
+                                    <span id="totalProgress">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="totalProgressFill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="exportSessionPdf">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 16L12 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <path d="M9 11L12 8L15 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M8 20H16C17.1046 20 18 19.1046 18 18V15" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" />
+                                <path
+                                    d="M16 4H8C6.89543 4 6 4.89543 6 6V14C6 15.1046 6.89543 16 8 16H18C19.1046 16 20 15.1046 20 14V10"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                            Export Session Plan
+                        </button>
+                        <button class="btn btn-outline" id="resetTimer">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M14 22C14 22 14.849 21.878 19.5 17.5C20.825 16.268 21.785 14.685 21.984 13H18.5C18.2239 13 18 12.7761 18 12.5C18 12.2239 18.2239 12 18.5 12H23.5C23.7761 12 24 12.2239 24 12.5V17.5C24 17.7761 23.7761 18 23.5 18C23.2239 18 23 17.7761 23 17.5V14.009C22.695 16.236 21.5 18.5 19 21C13.618 26.618 10 22 10 22C6.5 18.5 4 13 4 8C4 3.582 7.611 0 12 0C16.389 0 20 3.582 20 8C20 13 17.5 18.5 14 22Z"
+                                    fill="currentColor" />
+                            </svg>
+                            Reset Timer
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Training Session Plan</h3>
+                        <div class="btn-group">
+                            <button class="btn btn-outline" id="saveSessions">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16.1716C16.702 3 17.2107 3.21071 17.5858 3.58579L20.4142 6.41421C20.7893 6.78929 21 7.29799 21 7.82843V19C21 20.1046 20.1046 21 19 21Z"
+                                        stroke="currentColor" stroke-width="2" />
+                                    <path d="M17 21V13H7V21" stroke="currentColor" stroke-width="2" />
+                                    <path d="M7 3V8H15" stroke="currentColor" stroke-width="2" />
+                                </svg>
+                                Save Plan
+                            </button>
+                            <button class="btn btn-outline" id="loadDefaultSessions">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C15.3019 3 18.1885 4.77814 19.7545 7.42909"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <path d="M21 3V8H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                                Load Default
+                            </button>
+                        </div>
+                    </div>
+                    <div class="session-list" id="sessionList">
+                        <!-- Session items will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Player Dashboard Module -->
+        <section id="dashboard" class="module">
+            <div class="dashboard-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Player Performance Dashboard</h2>
+                        <div class="search-bar">
+                            <input type="text" class="form-control" id="playerSearch"
+                                placeholder="Search players by name or position...">
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="players-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Position</th>
+                                    <th>Average</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="playersTable">
+                                <!-- Player rows will be generated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="btn-group mt-4">
+                        <button class="btn btn-primary" id="exportAllPlayers">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 16L12 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <path d="M9 11L12 8L15 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M8 20H16C17.1046 20 18 19.1046 18 18V15" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" />
+                                <path
+                                    d="M16 4H8C6.89543 4 6 4.89543 6 6V14C6 15.1046 6.89543 16 8 16H18C19.1046 16 20 15.1046 20 14V10"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                            Export All Players PDF
+                        </button>
+                        <button class="btn btn-outline" id="importPlayers">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M17 8L12 3L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                                <path d="M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            Import Players
+                        </button>
+                        <button class="btn btn-danger" id="clearAllPlayers">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <path d="M3 7H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <path d="M10 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <path d="M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <path d="M8 7V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V7"
+                                    stroke="currentColor" stroke-width="2" />
+                            </svg>
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title" id="playerFormTitle">Add New Player</h3>
+                    <form class="player-form" id="playerForm">
+                        <input type="hidden" id="editPlayerId">
+
+                        <div class="form-group">
+                            <label for="playerName">Name</label>
+                            <input type="text" class="form-control" id="playerName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="playerAge">Age</label>
+                            <input type="number" class="form-control" id="playerAge" min="10" max="50" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="playerPosition">Position</label>
+                            <select class="form-control" id="playerPosition" required>
+                                <option value="">Select Position</option>
+                                <option value="Goalkeeper">Goalkeeper</option>
+                                <option value="Defender">Defender</option>
+                                <option value="Midfielder">Midfielder</option>
+                                <option value="Forward">Forward</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="playerNotes">Coach Notes</label>
+                            <textarea class="form-control" id="playerNotes" rows="3"
+                                placeholder="Enter notes about the player's performance, attitude, areas for improvement..."></textarea>
+                        </div>
+
+                        <h4>Performance Metrics</h4>
+
+                        <div class="form-group">
+                            <label for="controlsSlider">Controls <span id="controlsValue">5</span></label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="controlsSlider" min="0" max="10" value="5">
+                                <div class="slider-value" id="controlsDisplay">5</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="passingSlider">Passing <span id="passingValue">5</span></label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="passingSlider" min="0" max="10" value="5">
+                                <div class="slider-value" id="passingDisplay">5</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dribblingSlider">Dribbling <span id="dribblingValue">5</span></label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="dribblingSlider" min="0" max="10" value="5">
+                                <div class="slider-value" id="dribblingDisplay">5</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="shootingSlider">Shooting <span id="shootingValue">5</span></label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="shootingSlider" min="0" max="10" value="5">
+                                <div class="slider-value" id="shootingDisplay">5</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="defenceSlider">Defence <span id="defenceValue">5</span></label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="defenceSlider" min="0" max="10" value="5">
+                                <div class="slider-value" id="defenceDisplay">5</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="staminaSlider">Stamina <span id="staminaValue">5</span></label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="staminaSlider" min="0" max="10" value="5">
+                                <div class="slider-value" id="staminaDisplay">5</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="performanceSlider">Match Performance <span
+                                    id="performanceValue">5</span></label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="performanceSlider" min="0" max="10" value="5">
+                                <div class="slider-value" id="performanceDisplay">5</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="attackingSlider">Attacking <span id="attackingValue">5</span></label>
+                            <div class="slider-container">
+                                <input type="range" class="slider" id="attackingSlider" min="0" max="10" value="5">
+                                <div class="slider-value" id="attackingDisplay">5</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Average Score: <span id="averageScore">5.0</span></label>
+                        </div>
+
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" id="savePlayerBtn">Save Player</button>
+                            <button type="button" class="btn btn-outline" id="cancelEditBtn"
+                                style="display: none;">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Session Edit Modal -->
+    <div class="modal" id="sessionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="sessionModalTitle">Add New Session</h3>
+                <button class="close-modal" id="closeSessionModal">&times;</button>
+            </div>
+            <form id="sessionForm">
+                <input type="hidden" id="editSessionId">
+                <div class="form-group">
+                    <label for="sessionTitle">Session Title</label>
+                    <input type="text" class="form-control" id="sessionTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="sessionDescription">Description</label>
+                    <textarea class="form-control" id="sessionDescription" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="sessionDuration">Duration (minutes)</label>
+                    <input type="number" class="form-control" id="sessionDuration" min="1" max="120" value="10"
+                        required>
+                </div>
+                <div class="btn-group mt-4">
+                    <button type="submit" class="btn btn-primary" id="saveSessionBtn">Save Session</button>
+                    <button type="button" class="btn btn-outline" id="cancelSessionBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global Variables
+        let currentTheme = 'light';
+        let attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || {};
+        let playersData = JSON.parse(localStorage.getItem('playersData')) || [];
+        let trainingSessions = JSON.parse(localStorage.getItem('trainingSessions')) || [];
+        let timerInterval = null;
+        let currentSessionIndex = -1;
+        let timerRunning = false;
+        let timerPaused = false;
+        let remainingTime = 0;
+        let totalRemainingTime = 0;
+
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+        const modules = document.querySelectorAll('.module');
+        const currentDateTime = document.getElementById('currentDateTime');
+        const playerList = document.getElementById('playerList');
+        const newPlayerName = document.getElementById('newPlayerName');
+        const addPlayerBtn = document.getElementById('addPlayerBtn');
+        const presentCount = document.getElementById('presentCount');
+        const absentCount = document.getElementById('absentCount');
+        const lateCount = document.getElementById('lateCount');
+        const exportPdf = document.getElementById('exportPdf');
+        const exportText = document.getElementById('exportText');
+        const copyClipboard = document.getElementById('copyClipboard');
+        const clearAttendance = document.getElementById('clearAttendance');
+        const sessionList = document.getElementById('sessionList');
+        const startTraining = document.getElementById('startTraining');
+        const pauseResume = document.getElementById('pauseResume');
+        const skipSession = document.getElementById('skipSession');
+        const addSessionBtn = document.getElementById('addSessionBtn');
+        const sessionTimerDisplay = document.getElementById('sessionTimerDisplay');
+        const totalTimerDisplay = document.getElementById('totalTimerDisplay');
+        const sessionProgressFill = document.getElementById('sessionProgressFill');
+        const totalProgressFill = document.getElementById('totalProgressFill');
+        const sessionProgress = document.getElementById('sessionProgress');
+        const totalProgress = document.getElementById('totalProgress');
+        const currentSessionName = document.getElementById('currentSessionTitle');
+        const currentSessionDescription = document.getElementById('currentSessionDescription');
+        const currentSessionInfo = document.getElementById('currentSessionInfo');
+        const exportSessionPdf = document.getElementById('exportSessionPdf');
+        const resetTimer = document.getElementById('resetTimer');
+        const saveSessions = document.getElementById('saveSessions');
+        const loadDefaultSessions = document.getElementById('loadDefaultSessions');
+        const playersTable = document.getElementById('playersTable');
+        const playerSearch = document.getElementById('playerSearch');
+        const playerForm = document.getElementById('playerForm');
+        const playerFormTitle = document.getElementById('playerFormTitle');
+        const editPlayerId = document.getElementById('editPlayerId');
+        const playerName = document.getElementById('playerName');
+        const playerAge = document.getElementById('playerAge');
+        const playerPosition = document.getElementById('playerPosition');
+        const playerNotes = document.getElementById('playerNotes');
+        const savePlayerBtn = document.getElementById('savePlayerBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const exportAllPlayers = document.getElementById('exportAllPlayers');
+        const importPlayers = document.getElementById('importPlayers');
+        const clearAllPlayers = document.getElementById('clearAllPlayers');
+        const averageScore = document.getElementById('averageScore');
+
+        // Modal Elements
+        const sessionModal = document.getElementById('sessionModal');
+        const sessionModalTitle = document.getElementById('sessionModalTitle');
+        const closeSessionModal = document.getElementById('closeSessionModal');
+        const sessionForm = document.getElementById('sessionForm');
+        const editSessionId = document.getElementById('editSessionId');
+        const sessionTitle = document.getElementById('sessionTitle');
+        const sessionDescription = document.getElementById('sessionDescription');
+        const sessionDuration = document.getElementById('sessionDuration');
+        const saveSessionBtn = document.getElementById('saveSessionBtn');
+        const cancelSessionBtn = document.getElementById('cancelSessionBtn');
+
+        // Slider elements
+        const sliders = [
+            { slider: 'controlsSlider', display: 'controlsDisplay', value: 'controlsValue' },
+            { slider: 'passingSlider', display: 'passingDisplay', value: 'passingValue' },
+            { slider: 'dribblingSlider', display: 'dribblingDisplay', value: 'dribblingValue' },
+            { slider: 'shootingSlider', display: 'shootingDisplay', value: 'shootingValue' },
+            { slider: 'defenceSlider', display: 'defenceDisplay', value: 'defenceValue' },
+            { slider: 'staminaSlider', display: 'staminaDisplay', value: 'staminaValue' },
+            { slider: 'performanceSlider', display: 'performanceDisplay', value: 'performanceValue' },
+            { slider: 'attackingSlider', display: 'attackingDisplay', value: 'attackingValue' }
+        ];
+
+        // Default Training Sessions
+        const defaultTrainingSessions = [
+            {
+                id: 1,
+                title: "Warm-up",
+                description: "Dynamic stretching and light cardio to prepare muscles for training",
+                duration: 10
+            },
+            {
+                id: 2,
+                title: "Skill Training",
+                description: "Ball control, dribbling, and first touch exercises to improve technical ability",
+                duration: 20
+            },
+            {
+                id: 3,
+                title: "Technical Drills",
+                description: "Passing, shooting, and crossing techniques with focus on accuracy",
+                duration: 25
+            },
+            {
+                id: 4,
+                title: "Tactical Session",
+                description: "Positional play and team formation drills to improve game understanding",
+                duration: 30
+            },
+            {
+                id: 5,
+                title: "Fitness & Conditioning",
+                description: "Endurance, speed, and agility training to build physical capacity",
+                duration: 20
+            },
+            {
+                id: 6,
+                title: "Match Play",
+                description: "Small-sided games and match simulations to apply skills in game situations",
+                duration: 40
+            },
+            {
+                id: 7,
+                title: "Cool-down",
+                description: "Static stretching and recovery exercises to prevent injury and aid recovery",
+                duration: 10
+            }
+        ];
+
+        // Initialize Application
+        function initApp() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+
+            // Load default sessions if none exist
+            if (trainingSessions.length === 0) {
+                trainingSessions = [...defaultTrainingSessions];
+                saveTrainingSessions();
+            }
+
+            loadAttendanceData();
+            renderPlayerList();
+            renderSessionList();
+            renderPlayersTable();
+
+            setupEventListeners();
+            calculateAverageScore();
+
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                toggleTheme();
+            }
+        }
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            // Theme Toggle
+            themeToggle.addEventListener('click', toggleTheme);
+
+            // Navigation
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const moduleId = link.getAttribute('data-module');
+                    switchModule(moduleId);
+
+                    navLinks.forEach(nav => nav.classList.remove('active'));
+                    link.classList.add('active');
+
+                    mobileNavLinks.forEach(nav => nav.classList.remove('active'));
+                    document.querySelector(`.mobile-nav-link[data-module="${moduleId}"]`).classList.add('active');
+
+                    mobileMenu.classList.remove('active');
+                });
+            });
+
+            // Mobile Navigation
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('active');
+            });
+
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const moduleId = link.getAttribute('data-module');
+                    switchModule(moduleId);
+
+                    mobileNavLinks.forEach(nav => nav.classList.remove('active'));
+                    link.classList.add('active');
+
+                    navLinks.forEach(nav => nav.classList.remove('active'));
+                    document.querySelector(`.nav-link[data-module="${moduleId}"]`).classList.add('active');
+
+                    mobileMenu.classList.remove('active');
+                });
+            });
+
+            // Attendance Module
+            addPlayerBtn.addEventListener('click', addNewPlayer);
+            exportPdf.addEventListener('click', exportAttendancePdf);
+            exportText.addEventListener('click', exportAttendanceText);
+            copyClipboard.addEventListener('click', copyAttendanceToClipboard);
+            clearAttendance.addEventListener('click', clearTodayAttendance);
+
+            // Timer Module
+            startTraining.addEventListener('click', startTrainingSession);
+            pauseResume.addEventListener('click', togglePauseResume);
+            skipSession.addEventListener('click', skipToNextSession);
+            addSessionBtn.addEventListener('click', openSessionModal);
+            exportSessionPdf.addEventListener('click', exportSessionPlanPdf);
+            resetTimer.addEventListener('click', resetTrainingTimer);
+            saveSessions.addEventListener('click', saveTrainingSessions);
+            loadDefaultSessions.addEventListener('click', loadDefaultTrainingSessions);
+
+            // Dashboard Module
+            playerSearch.addEventListener('input', filterPlayers);
+            playerForm.addEventListener('submit', savePlayer);
+            cancelEditBtn.addEventListener('click', cancelEdit);
+            exportAllPlayers.addEventListener('click', exportAllPlayersPdf);
+            importPlayers.addEventListener('click', importPlayersData);
+            clearAllPlayers.addEventListener('click', clearAllPlayersData);
+
+            // Modal Events
+            closeSessionModal.addEventListener('click', closeModal);
+            cancelSessionBtn.addEventListener('click', closeModal);
+            sessionForm.addEventListener('submit', saveSession);
+
+            // Slider events
+            sliders.forEach(sliderConfig => {
+                const slider = document.getElementById(sliderConfig.slider);
+                const display = document.getElementById(sliderConfig.display);
+                const value = document.getElementById(sliderConfig.value);
+
+                slider.addEventListener('input', () => {
+                    display.textContent = slider.value;
+                    value.textContent = slider.value;
+                    calculateAverageScore();
+                });
+            });
+        }
+
+        // Theme Management
+        function toggleTheme() {
+            if (currentTheme === 'light') {
+                document.body.classList.add('dark-theme');
+                currentTheme = 'dark';
+                themeToggle.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                `;
+            } else {
+                document.body.classList.remove('dark-theme');
+                currentTheme = 'light';
+                themeToggle.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 2V4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 20V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M4.93 4.93L6.34 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17.66 17.66L19.07 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12H4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M20 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.34 17.66L4.93 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19.07 4.93L17.66 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                `;
+            }
+            localStorage.setItem('theme', currentTheme);
+        }
+
+        // Module Navigation
+        function switchModule(moduleId) {
+            modules.forEach(module => {
+                module.classList.remove('active');
+            });
+            document.getElementById(moduleId).classList.add('active');
+        }
+
+        // Date and Time
+        function updateDateTime() {
+            const now = new Date();
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            currentDateTime.textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        // Attendance Module Functions
+        function loadAttendanceData() {
+            const today = new Date().toDateString();
+            if (!attendanceData[today]) {
+                attendanceData[today] = {
+                    players: [],
+                    date: today
+                };
+                saveAttendanceData();
+            }
+            updateAttendanceStats();
+        }
+
+        function saveAttendanceData() {
+            localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
+            updateAttendanceStats();
+        }
+
+        function updateAttendanceStats() {
+            const today = new Date().toDateString();
+            const todayData = attendanceData[today];
+
+            if (!todayData) return;
+
+            const present = todayData.players.filter(p => p.status === 'present').length;
+            const absent = todayData.players.filter(p => p.status === 'absent').length;
+            const late = todayData.players.filter(p => p.status === 'late').length;
+
+            presentCount.textContent = present;
+            absentCount.textContent = absent;
+            lateCount.textContent = late;
+        }
+
+        function renderPlayerList() {
+            const today = new Date().toDateString();
+            const todayData = attendanceData[today];
+
+            playerList.innerHTML = '';
+
+            if (todayData && todayData.players.length > 0) {
+                todayData.players.forEach(player => {
+                    const playerCard = document.createElement('div');
+                    playerCard.className = 'player-card';
+                    playerCard.innerHTML = `
+                        <div class="player-avatar">${player.name.charAt(0)}</div>
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-status status-${player.status || 'none'}">${player.status ? player.status.charAt(0).toUpperCase() + player.status.slice(1) : 'Not Marked'}</div>
+                    `;
+
+                    playerCard.addEventListener('click', () => {
+                        togglePlayerStatus(player.id);
+                    });
+
+                    playerList.appendChild(playerCard);
+                });
+            } else {
+                playerList.innerHTML = '<p class="text-center">No players added yet. Use the form below to add players.</p>';
+            }
+        }
+
+        function addNewPlayer() {
+            const name = newPlayerName.value.trim();
+            if (!name) return;
+
+            const today = new Date().toDateString();
+            if (!attendanceData[today]) {
+                attendanceData[today] = {
+                    players: [],
+                    date: today
+                };
+            }
+
+            const playerId = Date.now().toString();
+            attendanceData[today].players.push({
+                id: playerId,
+                name: name,
+                status: null
+            });
+
+            saveAttendanceData();
+            renderPlayerList();
+            newPlayerName.value = '';
+        }
+
+        function togglePlayerStatus(playerId) {
+            const today = new Date().toDateString();
+            const player = attendanceData[today].players.find(p => p.id === playerId);
+
+            if (!player) return;
+
+            // Cycle through statuses: null -> present -> absent -> late -> null
+            if (player.status === null) {
+                player.status = 'present';
+            } else if (player.status === 'present') {
+                player.status = 'absent';
+            } else if (player.status === 'absent') {
+                player.status = 'late';
+            } else {
+                player.status = null;
+            }
+
+            saveAttendanceData();
+            renderPlayerList();
+        }
+
+        function clearTodayAttendance() {
+            if (confirm('Are you sure you want to clear today\'s attendance data?')) {
+                const today = new Date().toDateString();
+                attendanceData[today] = {
+                    players: [],
+                    date: today
+                };
+                saveAttendanceData();
+                renderPlayerList();
+            }
+        }
+
+        function exportAttendancePdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const today = new Date().toDateString();
+            const todayData = attendanceData[today];
+
+            if (!todayData) return;
+
+            // Add gradient background
+            doc.setFillColor(41, 128, 185);
+            doc.rect(0, 0, 210, 297, 'F');
+
+            // Add logo and header with white text
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.text('TNS PARK VIEW FC', 105, 30, { align: 'center' });
+            doc.setFontSize(18);
+            doc.text('ATTENDANCE REPORT', 105, 45, { align: 'center' });
+
+            // Add date in a white box
+            doc.setFillColor(255, 255, 255);
+            doc.rect(75, 55, 60, 10, 'F');
+            doc.setTextColor(41, 128, 185);
+            doc.setFontSize(12);
+            doc.text(today, 105, 62, { align: 'center' });
+
+            // Content area with white background
+            doc.setFillColor(255, 255, 255);
+            doc.rect(10, 75, 190, 180, 'F');
+            doc.setTextColor(0, 0, 0);
+
+            // Create table header
+            doc.setFillColor(41, 128, 185);
+            doc.rect(15, 85, 180, 10, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(12);
+            doc.text('Player Name', 25, 92);
+            doc.text('Status', 150, 92);
+
+            let yPosition = 100;
+            let rowCount = 0;
+
+            // Present players
+            const presentPlayers = todayData.players.filter(p => p.status === 'present');
+            if (presentPlayers.length > 0) {
+                doc.setTextColor(46, 204, 113);
+                doc.text('PRESENT PLAYERS', 20, yPosition);
+                yPosition += 8;
+
+                doc.setTextColor(0, 0, 0);
+                presentPlayers.forEach(player => {
+                    if (rowCount % 2 === 0) {
+                        doc.setFillColor(245, 245, 245);
+                        doc.rect(15, yPosition - 4, 180, 8, 'F');
+                    }
+
+                    doc.text(player.name, 25, yPosition);
+                    doc.setTextColor(46, 204, 113);
+                    doc.text('PRESENT', 150, yPosition);
+                    doc.setTextColor(0, 0, 0);
+
+                    yPosition += 8;
+                    rowCount++;
+
+                    if (yPosition > 240) {
+                        doc.addPage();
+                        yPosition = 20;
+                        doc.setFillColor(255, 255, 255);
+                        doc.rect(10, 10, 190, 277, 'F');
+                        yPosition = 30;
+                    }
+                });
+                yPosition += 5;
+            }
+
+            // Absent players
+            const absentPlayers = todayData.players.filter(p => p.status === 'absent');
+            if (absentPlayers.length > 0) {
+                doc.setTextColor(231, 76, 60);
+                doc.text('ABSENT PLAYERS', 20, yPosition);
+                yPosition += 8;
+
+                doc.setTextColor(0, 0, 0);
+                absentPlayers.forEach(player => {
+                    if (rowCount % 2 === 0) {
+                        doc.setFillColor(245, 245, 245);
+                        doc.rect(15, yPosition - 4, 180, 8, 'F');
+                    }
+
+                    doc.text(player.name, 25, yPosition);
+                    doc.setTextColor(231, 76, 60);
+                    doc.text('ABSENT', 150, yPosition);
+                    doc.setTextColor(0, 0, 0);
+
+                    yPosition += 8;
+                    rowCount++;
+
+                    if (yPosition > 240) {
+                        doc.addPage();
+                        yPosition = 20;
+                        doc.setFillColor(255, 255, 255);
+                        doc.rect(10, 10, 190, 277, 'F');
+                        yPosition = 30;
+                    }
+                });
+                yPosition += 5;
+            }
+
+            // Late players
+            const latePlayers = todayData.players.filter(p => p.status === 'late');
+            if (latePlayers.length > 0) {
+                doc.setTextColor(243, 156, 18);
+                doc.text('LATE PLAYERS', 20, yPosition);
+                yPosition += 8;
+
+                doc.setTextColor(0, 0, 0);
+                latePlayers.forEach(player => {
+                    if (rowCount % 2 === 0) {
+                        doc.setFillColor(245, 245, 245);
+                        doc.rect(15, yPosition - 4, 180, 8, 'F');
+                    }
+
+                    doc.text(player.name, 25, yPosition);
+                    doc.setTextColor(243, 156, 18);
+                    doc.text('LATE', 150, yPosition);
+                    doc.setTextColor(0, 0, 0);
+
+                    yPosition += 8;
+                    rowCount++;
+
+                    if (yPosition > 240) {
+                        doc.addPage();
+                        yPosition = 20;
+                        doc.setFillColor(255, 255, 255);
+                        doc.rect(10, 10, 190, 277, 'F');
+                        yPosition = 30;
+                    }
+                });
+            }
+
+            // Summary
+            yPosition += 10;
+            doc.setDrawColor(200);
+            doc.line(15, yPosition, 195, yPosition);
+            yPosition += 10;
+
+            doc.setFontSize(12);
+            doc.setTextColor(41, 128, 185);
+            doc.text('SUMMARY', 20, yPosition);
+            yPosition += 8;
+
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Total Players: ${todayData.players.length}`, 25, yPosition);
+            yPosition += 6;
+            doc.text(`Present: ${presentPlayers.length}`, 25, yPosition);
+            yPosition += 6;
+            doc.text(`Absent: ${absentPlayers.length}`, 25, yPosition);
+            yPosition += 6;
+            doc.text(`Late: ${latePlayers.length}`, 25, yPosition);
+
+            // Footer with gradient
+            doc.setFillColor(41, 128, 185);
+            doc.rect(0, 260, 210, 37, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.text('Generated for TNS Park View FC — Head Coach', 105, 275, { align: 'center' });
+            doc.text(today, 105, 285, { align: 'center' });
+
+            // Save the PDF
+            doc.save(`attendance-${today.replace(/ /g, '-')}.pdf`);
+        }
+
+        function exportAttendanceText() {
+            const today = new Date().toDateString();
+            const todayData = attendanceData[today];
+
+            if (!todayData) return;
+
+            let textContent = `TNS Park View FC - Attendance Report\n`;
+            textContent += `Date: ${today}\n\n`;
+
+            textContent += `PRESENT:\n`;
+            todayData.players.filter(p => p.status === 'present').forEach(p => {
+                textContent += `- ${p.name}\n`;
+            });
+
+            textContent += `\nABSENT:\n`;
+            todayData.players.filter(p => p.status === 'absent').forEach(p => {
+                textContent += `- ${p.name}\n`;
+            });
+
+            textContent += `\nLATE:\n`;
+            todayData.players.filter(p => p.status === 'late').forEach(p => {
+                textContent += `- ${p.name}\n`;
+            });
+
+            textContent += `\nGenerated for TNS Park View FC — Head Coach`;
+
+            const blob = new Blob([textContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `attendance-${today.replace(/ /g, '-')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function copyAttendanceToClipboard() {
+            const today = new Date().toDateString();
+            const todayData = attendanceData[today];
+
+            if (!todayData) return;
+
+            let textContent = `TNS Park View FC - Attendance\n`;
+            textContent += `Date: ${today}\n\n`;
+
+            textContent += `Present: ${todayData.players.filter(p => p.status === 'present').length}\n`;
+            textContent += `Absent: ${todayData.players.filter(p => p.status === 'absent').length}\n`;
+            textContent += `Late: ${todayData.players.filter(p => p.status === 'late').length}\n\n`;
+
+            navigator.clipboard.writeText(textContent)
+                .then(() => {
+                    alert('Attendance summary copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+        }
+
+        // Timer Module Functions
+        function renderSessionList() {
+            sessionList.innerHTML = '';
+
+            if (trainingSessions.length === 0) {
+                sessionList.innerHTML = '<p class="text-center">No sessions added yet. Click "Add Session" to create a training plan.</p>';
+                return;
+            }
+
+            trainingSessions.forEach((session, index) => {
+                const sessionItem = document.createElement('div');
+                sessionItem.className = `session-item ${index === currentSessionIndex ? 'active' : ''}`;
+                sessionItem.innerHTML = `
+                    <div class="session-info">
+                        <div class="session-title">${session.title}</div>
+                        <div class="session-desc">${session.description}</div>
+                    </div>
+                    <div class="session-controls">
+                        <div class="time-controls">
+                            <button class="btn btn-outline btn-sm decrease-time" data-index="${index}">-</button>
+                            <input type="number" class="time-input" value="${session.duration}" min="1" max="120" data-index="${index}">
+                            <button class="btn btn-outline btn-sm increase-time" data-index="${index}">+</button>
+                        </div>
+                        <div class="action-controls">
+                            <button class="btn btn-outline btn-sm edit-session" data-id="${session.id}">Edit</button>
+                            <button class="btn btn-outline btn-sm delete-session" data-id="${session.id}">Delete</button>
+                        </div>
+                    </div>
+                `;
+
+                sessionList.appendChild(sessionItem);
+
+                // Add event listeners for time controls
+                const decreaseBtn = sessionItem.querySelector('.decrease-time');
+                const increaseBtn = sessionItem.querySelector('.increase-time');
+                const timeInput = sessionItem.querySelector('.time-input');
+                const editBtn = sessionItem.querySelector('.edit-session');
+                const deleteBtn = sessionItem.querySelector('.delete-session');
+
+                decreaseBtn.addEventListener('click', () => {
+                    if (session.duration > 1) {
+                        session.duration--;
+                        timeInput.value = session.duration;
+                        saveTrainingSessions();
+                        calculateTotalTime();
+                    }
+                });
+
+                increaseBtn.addEventListener('click', () => {
+                    if (session.duration < 120) {
+                        session.duration++;
+                        timeInput.value = session.duration;
+                        saveTrainingSessions();
+                        calculateTotalTime();
+                    }
+                });
+
+                timeInput.addEventListener('change', () => {
+                    const value = parseInt(timeInput.value);
+                    if (value >= 1 && value <= 120) {
+                        session.duration = value;
+                        saveTrainingSessions();
+                        calculateTotalTime();
+                    } else {
+                        timeInput.value = session.duration;
+                    }
+                });
+
+                editBtn.addEventListener('click', () => {
+                    editSession(session.id);
+                });
+
+                deleteBtn.addEventListener('click', () => {
+                    deleteSession(session.id);
+                });
+            });
+
+            calculateTotalTime();
+        }
+
+        function calculateTotalTime() {
+            totalRemainingTime = trainingSessions.reduce((total, session) => total + (session.duration * 60), 0);
+            updateTotalTimerDisplay();
+        }
+
+        function openSessionModal() {
+            sessionModalTitle.textContent = 'Add New Session';
+            sessionForm.reset();
+            editSessionId.value = '';
+            sessionModal.classList.add('active');
+        }
+
+        function closeModal() {
+            sessionModal.classList.remove('active');
+        }
+
+        function editSession(sessionId) {
+            const session = trainingSessions.find(s => s.id === sessionId);
+            if (!session) return;
+
+            sessionModalTitle.textContent = 'Edit Session';
+            editSessionId.value = session.id;
+            sessionTitle.value = session.title;
+            sessionDescription.value = session.description;
+            sessionDuration.value = session.duration;
+
+            sessionModal.classList.add('active');
+        }
+
+        function saveSession(e) {
+            e.preventDefault();
+
+            const id = editSessionId.value || Date.now();
+            const title = sessionTitle.value;
+            const description = sessionDescription.value;
+            const duration = parseInt(sessionDuration.value);
+
+            if (editSessionId.value) {
+                // Update existing session
+                const index = trainingSessions.findIndex(s => s.id === parseInt(id));
+                if (index !== -1) {
+                    trainingSessions[index] = {
+                        id: parseInt(id),
+                        title,
+                        description,
+                        duration
+                    };
+                }
+            } else {
+                // Add new session
+                trainingSessions.push({
+                    id: parseInt(id),
+                    title,
+                    description,
+                    duration
+                });
+            }
+
+            saveTrainingSessions();
+            renderSessionList();
+            closeModal();
+        }
+
+        function deleteSession(sessionId) {
+            if (confirm('Are you sure you want to delete this session?')) {
+                trainingSessions = trainingSessions.filter(s => s.id !== sessionId);
+                saveTrainingSessions();
+                renderSessionList();
+            }
+        }
+
+        function saveTrainingSessions() {
+            localStorage.setItem('trainingSessions', JSON.stringify(trainingSessions));
+        }
+
+        function loadDefaultTrainingSessions() {
+            if (confirm('This will replace your current session plan with the default one. Continue?')) {
+                trainingSessions = [...defaultTrainingSessions];
+                saveTrainingSessions();
+                renderSessionList();
+            }
+        }
+
+        function startTrainingSession() {
+            if (timerRunning) return;
+
+            if (trainingSessions.length === 0) {
+                alert('Please add at least one training session first.');
+                return;
+            }
+
+            currentSessionIndex = 0;
+            timerRunning = true;
+            timerPaused = false;
+
+            startTraining.disabled = true;
+            pauseResume.disabled = false;
+            skipSession.disabled = false;
+            pauseResume.textContent = 'Pause';
+
+            calculateTotalTime();
+            startSessionTimer(currentSessionIndex);
+            updateSessionListUI();
+        }
+
+        function startSessionTimer(sessionIndex) {
+            if (sessionIndex >= trainingSessions.length) {
+                trainingComplete();
+                return;
+            }
+
+            const session = trainingSessions[sessionIndex];
+            remainingTime = session.duration * 60; // Convert to seconds
+
+            // Update session info display
+            currentSessionName.textContent = session.title;
+            currentSessionDescription.textContent = session.description;
+            currentSessionInfo.style.background = 'linear-gradient(135deg, var(--accent), #6f42c1)';
+
+            updateTimerDisplay();
+            sessionProgressFill.style.width = '0%';
+            sessionProgress.textContent = '0%';
+
+            // Reset session list UI
+            updateSessionListUI();
+
+            // Start the timer
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!timerPaused) {
+                    remainingTime--;
+                    totalRemainingTime--;
+
+                    updateTimerDisplay();
+                    updateTotalTimerDisplay();
+
+                    // Update progress bars
+                    const sessionTotalTime = session.duration * 60;
+                    const sessionProgressValue = ((sessionTotalTime - remainingTime) / sessionTotalTime) * 100;
+                    sessionProgressFill.style.width = `${sessionProgressValue}%`;
+                    sessionProgress.textContent = `${Math.round(sessionProgressValue)}%`;
+
+                    const totalProgressValue = ((calculateTotalSessionTime() - totalRemainingTime) / calculateTotalSessionTime()) * 100;
+                    totalProgressFill.style.width = `${totalProgressValue}%`;
+                    totalProgress.textContent = `${Math.round(totalProgressValue)}%`;
+
+                    if (remainingTime <= 0) {
+                        clearInterval(timerInterval);
+                        playSessionCompleteSound();
+
+                        // Move to next session after a short delay
+                        setTimeout(() => {
+                            currentSessionIndex++;
+                            startSessionTimer(currentSessionIndex);
+                        }, 2000);
+                    }
+                }
+            }, 1000);
+        }
+
+        function calculateTotalSessionTime() {
+            return trainingSessions.reduce((total, session) => total + (session.duration * 60), 0);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            sessionTimerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateTotalTimerDisplay() {
+            const minutes = Math.floor(totalRemainingTime / 60);
+            const seconds = totalRemainingTime % 60;
+            totalTimerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function togglePauseResume() {
+            timerPaused = !timerPaused;
+            pauseResume.textContent = timerPaused ? 'Resume' : 'Pause';
+
+            if (timerPaused) {
+                pauseResume.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+                    </svg>
+                    Resume
+                `;
+            } else {
+                pauseResume.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 4H10V20H6V4Z" fill="currentColor"/>
+                        <path d="M14 4H18V20H14V4Z" fill="currentColor"/>
+                    </svg>
+                    Pause
+                `;
+            }
+        }
+
+        function skipToNextSession() {
+            clearInterval(timerInterval);
+            currentSessionIndex++;
+            startSessionTimer(currentSessionIndex);
+        }
+
+        function resetTrainingTimer() {
+            if (confirm('Are you sure you want to reset the timer?')) {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                currentSessionIndex = -1;
+
+                startTraining.disabled = false;
+                pauseResume.disabled = true;
+                skipSession.disabled = true;
+
+                sessionTimerDisplay.textContent = '00:00';
+                totalTimerDisplay.textContent = '00:00';
+                currentSessionName.textContent = 'No Active Session';
+                currentSessionDescription.textContent = 'Start training to begin the session plan';
+                currentSessionInfo.style.background = 'linear-gradient(135deg, var(--accent), #6f42c1)';
+                sessionProgressFill.style.width = '0%';
+                totalProgressFill.style.width = '0%';
+                sessionProgress.textContent = '0%';
+                totalProgress.textContent = '0%';
+
+                pauseResume.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 4H10V20H6V4Z" fill="currentColor"/>
+                        <path d="M14 4H18V20H14V4Z" fill="currentColor"/>
+                    </svg>
+                    Pause
+                `;
+
+                calculateTotalTime();
+                updateSessionListUI();
+            }
+        }
+
+        function trainingComplete() {
+            timerRunning = false;
+            currentSessionIndex = -1;
+
+            startTraining.disabled = false;
+            pauseResume.disabled = true;
+            skipSession.disabled = true;
+
+            sessionTimerDisplay.textContent = '00:00';
+            totalTimerDisplay.textContent = '00:00';
+            currentSessionName.textContent = 'Training Complete!';
+            currentSessionDescription.textContent = 'All sessions completed successfully';
+            currentSessionInfo.style.background = 'linear-gradient(135deg, #51cf66, #2b8a3e)';
+            sessionProgressFill.style.width = '100%';
+            totalProgressFill.style.width = '100%';
+            sessionProgress.textContent = '100%';
+            totalProgress.textContent = '100%';
+
+            playTrainingCompleteSound();
+            updateSessionListUI();
+        }
+
+        function updateSessionListUI() {
+            const sessionItems = document.querySelectorAll('.session-item');
+            sessionItems.forEach((item, index) => {
+                if (index === currentSessionIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        function playSessionCompleteSound() {
+            // Create a more noticeable sound for session completion
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+
+                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                // Fallback to console log if audio context is not supported
+                console.log('BEEP! Session completed');
+            }
+        }
+
+        function playTrainingCompleteSound() {
+            // Create a distinct sound for training completion
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                // Play a more celebratory sound
+                oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.2); // E5
+                oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.4); // G5
+                oscillator.frequency.setValueAtTime(1046.50, audioContext.currentTime + 0.6); // C6
+
+                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1);
+            } catch (e) {
+                // Fallback to console log if audio context is not supported
+                console.log('TRAINING COMPLETE!');
+            }
+        }
+
+        function exportSessionPlanPdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Add gradient background
+            doc.setFillColor(41, 128, 185);
+            doc.rect(0, 0, 210, 297, 'F');
+
+            // Add logo and header with white text
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.text('TNS PARK VIEW FC', 105, 30, { align: 'center' });
+            doc.setFontSize(18);
+            doc.text('TRAINING SESSION PLAN', 105, 45, { align: 'center' });
+
+            // Add date in a white box
+            const today = new Date().toLocaleDateString();
+            doc.setFillColor(255, 255, 255);
+            doc.rect(75, 55, 60, 10, 'F');
+            doc.setTextColor(41, 128, 185);
+            doc.setFontSize(12);
+            doc.text(today, 105, 62, { align: 'center' });
+
+            // Content area with white background
+            doc.setFillColor(255, 255, 255);
+            doc.rect(10, 75, 190, 200, 'F');
+            doc.setTextColor(0, 0, 0);
+
+            let yPosition = 90;
+            let totalTime = 0;
+
+            // Session details in a detailed format
+            trainingSessions.forEach((session, index) => {
+                if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 20;
+
+                    // Add background to new page
+                    doc.setFillColor(41, 128, 185);
+                    doc.rect(0, 0, 210, 297, 'F');
+
+                    // Content area
+                    doc.setFillColor(255, 255, 255);
+                    doc.rect(10, 10, 190, 277, 'F');
+                    doc.setTextColor(0, 0, 0);
+                    yPosition = 25;
+                }
+
+                // Session header with background
+                doc.setFillColor(41, 128, 185);
+                doc.rect(15, yPosition - 5, 180, 15, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(12);
+                doc.text(`Session ${index + 1}: ${session.title} (${session.duration} minutes)`, 25, yPosition + 3);
+
+                yPosition += 15;
+
+                // Session description
+                doc.setFillColor(245, 245, 245);
+                doc.rect(15, yPosition, 180, 30, 'F');
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(10);
+                const descriptionLines = doc.splitTextToSize(session.description, 170);
+                doc.text(descriptionLines, 20, yPosition + 7);
+
+                yPosition += 35;
+                totalTime += session.duration;
+            });
+
+            // Total time
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Total Training Time: ${totalTime} minutes`, 20, yPosition + 10);
+
+            // Footer with gradient
+            doc.setFillColor(41, 128, 185);
+            doc.rect(0, 260, 210, 37, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.text('Generated for TNS Park View FC — Head Coach', 105, 275, { align: 'center' });
+            doc.text(today, 105, 285, { align: 'center' });
+
+            // Save the PDF
+            doc.save(`training-plan-${today.replace(/\//g, '-')}.pdf`);
+        }
+
+        // Dashboard Module Functions
+        function renderPlayersTable() {
+            playersTable.innerHTML = '';
+
+            if (playersData.length === 0) {
+                playersTable.innerHTML = '<tr><td colspan="5" class="text-center">No players added yet. Use the form to add players.</td></tr>';
+                return;
+            }
+
+            playersData.forEach(player => {
+                const average = calculatePlayerAverage(player);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${player.name}</td>
+                    <td>${player.age}</td>
+                    <td>${player.position}</td>
+                    <td>
+                        <div class="metric-cell">
+                            <div class="metric-bar">
+                                <div class="metric-fill" style="width: ${average * 10}%"></div>
+                            </div>
+                            <span>${average.toFixed(1)}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-outline btn-sm edit-player" data-id="${player.id}">Edit</button>
+                            <button class="btn btn-outline btn-sm delete-player" data-id="${player.id}">Delete</button>
+                            <button class="btn btn-outline btn-sm export-player" data-id="${player.id}">PDF</button>
+                        </div>
+                    </td>
+                `;
+
+                playersTable.appendChild(row);
+            });
+
+            // Add event listeners for action buttons
+            document.querySelectorAll('.edit-player').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const playerId = e.target.getAttribute('data-id');
+                    editPlayer(playerId);
+                });
+            });
+
+            document.querySelectorAll('.delete-player').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const playerId = e.target.getAttribute('data-id');
+                    deletePlayer(playerId);
+                });
+            });
+
+            document.querySelectorAll('.export-player').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const playerId = e.target.getAttribute('data-id');
+                    exportPlayerPdf(playerId);
+                });
+            });
+        }
+
+        function filterPlayers() {
+            const searchTerm = playerSearch.value.toLowerCase();
+            const rows = playersTable.querySelectorAll('tr');
+
+            rows.forEach(row => {
+                const name = row.cells[0].textContent.toLowerCase();
+                const position = row.cells[2].textContent.toLowerCase();
+
+                if (name.includes(searchTerm) || position.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function savePlayer(e) {
+            e.preventDefault();
+
+            const id = editPlayerId.value || Date.now().toString();
+            const name = playerName.value;
+            const age = parseInt(playerAge.value);
+            const position = playerPosition.value;
+            const notes = playerNotes.value;
+
+            // Get slider values
+            const controls = parseInt(document.getElementById('controlsSlider').value);
+            const passing = parseInt(document.getElementById('passingSlider').value);
+            const dribbling = parseInt(document.getElementById('dribblingSlider').value);
+            const shooting = parseInt(document.getElementById('shootingSlider').value);
+            const defence = parseInt(document.getElementById('defenceSlider').value);
+            const stamina = parseInt(document.getElementById('staminaSlider').value);
+            const performance = parseInt(document.getElementById('performanceSlider').value);
+            const attacking = parseInt(document.getElementById('attackingSlider').value);
+
+            const player = {
+                id,
+                name,
+                age,
+                position,
+                notes,
+                metrics: {
+                    controls,
+                    passing,
+                    dribbling,
+                    shooting,
+                    defence,
+                    stamina,
+                    performance,
+                    attacking
+                }
+            };
+
+            if (editPlayerId.value) {
+                // Update existing player
+                const index = playersData.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    playersData[index] = player;
+                }
+            } else {
+                // Add new player
+                playersData.push(player);
+            }
+
+            localStorage.setItem('playersData', JSON.stringify(playersData));
+            renderPlayersTable();
+            resetPlayerForm();
+        }
+
+        function editPlayer(playerId) {
+            const player = playersData.find(p => p.id === playerId);
+            if (!player) return;
+
+            editPlayerId.value = player.id;
+            playerName.value = player.name;
+            playerAge.value = player.age;
+            playerPosition.value = player.position;
+            playerNotes.value = player.notes || '';
+
+            // Set slider values
+            document.getElementById('controlsSlider').value = player.metrics.controls;
+            document.getElementById('passingSlider').value = player.metrics.passing;
+            document.getElementById('dribblingSlider').value = player.metrics.dribbling;
+            document.getElementById('shootingSlider').value = player.metrics.shooting;
+            document.getElementById('defenceSlider').value = player.metrics.defence;
+            document.getElementById('staminaSlider').value = player.metrics.stamina;
+            document.getElementById('performanceSlider').value = player.metrics.performance;
+            document.getElementById('attackingSlider').value = player.metrics.attacking;
+
+            // Update slider displays
+            sliders.forEach(sliderConfig => {
+                const metricName = sliderConfig.slider.replace('Slider', '');
+                const value = player.metrics[metricName];
+                document.getElementById(sliderConfig.display).textContent = value;
+                document.getElementById(sliderConfig.value).textContent = value;
+            });
+
+            calculateAverageScore();
+
+            playerFormTitle.textContent = 'Edit Player';
+            savePlayerBtn.textContent = 'Update Player';
+            cancelEditBtn.style.display = 'inline-flex';
+        }
+
+        function deletePlayer(playerId) {
+            if (confirm('Are you sure you want to delete this player?')) {
+                playersData = playersData.filter(p => p.id !== playerId);
+                localStorage.setItem('playersData', JSON.stringify(playersData));
+                renderPlayersTable();
+            }
+        }
+
+        function cancelEdit() {
+            resetPlayerForm();
+        }
+
+        function resetPlayerForm() {
+            playerForm.reset();
+            editPlayerId.value = '';
+            playerFormTitle.textContent = 'Add New Player';
+            savePlayerBtn.textContent = 'Save Player';
+            cancelEditBtn.style.display = 'none';
+
+            // Reset sliders to default values
+            sliders.forEach(sliderConfig => {
+                document.getElementById(sliderConfig.slider).value = 5;
+                document.getElementById(sliderConfig.display).textContent = 5;
+                document.getElementById(sliderConfig.value).textContent = 5;
+            });
+
+            calculateAverageScore();
+        }
+
+        function calculateAverageScore() {
+            let total = 0;
+            let count = 0;
+
+            sliders.forEach(sliderConfig => {
+                const value = parseInt(document.getElementById(sliderConfig.slider).value);
+                total += value;
+                count++;
+            });
+
+            const average = total / count;
+            averageScore.textContent = average.toFixed(1);
+        }
+
+        function calculatePlayerAverage(player) {
+            const metrics = player.metrics;
+            const values = Object.values(metrics);
+            const sum = values.reduce((acc, val) => acc + val, 0);
+            return sum / values.length;
+        }
+
+        function exportPlayerPdf(playerId) {
+            const player = playersData.find(p => p.id === playerId);
+            if (!player) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF("p", "mm", "a4");
+
+            const average = calculatePlayerAverage(player);
+
+            // Background
+            doc.setFillColor(41, 128, 185);
+            doc.rect(0, 0, 210, 297, "F");
+
+            // Header
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.text("TNS PARK VIEW FC", 105, 30, { align: "center" });
+            doc.setFontSize(18);
+            doc.text("PLAYER PERFORMANCE REPORT", 105, 45, { align: "center" });
+
+            // Player Info Card
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(20, 60, 170, 50, 5, 5, "F");
+
+            doc.setTextColor(0);
+            doc.setFontSize(14);
+            doc.text(`Name: ${player.name}`, 30, 75);
+            doc.text(`Age: ${player.age}`, 30, 85);
+            doc.text(`Position: ${player.position}`, 30, 95);
+
+            // Rating Circle
+            doc.setFillColor(41, 128, 185);
+            doc.circle(160, 80, 15, "F");
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(12);
+            doc.text(`${average.toFixed(1)}`, 160, 83, { align: "center" });
+            doc.setFontSize(8);
+            doc.text("RATING", 160, 90, { align: "center" });
+
+            /* --------------------------------------------------
+               PERFECT METRICS SECTION 
+               8 metrics → 2 columns × 4 rows
+               -------------------------------------------------- */
+            doc.setFillColor(255, 255, 255);
+            doc.roundedRect(20, 125, 170, 125, 5, 5, "F"); // PERFECT height
+
+            doc.setTextColor(0);
+            doc.setFontSize(16);
+            doc.text("PERFORMANCE METRICS", 105, 140, { align: "center" });
+
+            const metrics = player.metrics;
+
+            // FIXED GRID POSITIONS
+            const col1 = 30;
+            const col2 = 115;
+            let startY = 160;
+            const rowGap = 14; // PERFECT for exactly 4 rows
+
+            const metricEntries = Object.entries(metrics);
+
+            metricEntries.forEach(([metric, value], i) => {
+                const isLeft = (i % 2 === 0);
+                const x = isLeft ? col1 : col2;
+                const y = startY + Math.floor(i / 2) * rowGap;
+
+
+                // Metric Box
+                doc.setFillColor(245, 245, 245);
+                doc.roundedRect(x, y - 8, 70, 20, 3, 3, "F");
+
+                // Title
+                doc.setFontSize(10);
+                doc.setTextColor(100);
+                const metricName = metric.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+                doc.text(`${metricName}:`, x + 5, y);
+
+                // Progress Bar Background
+                doc.setFillColor(230, 230, 230);
+                doc.roundedRect(x + 40, y - 4, 25, 5, 2.5, 2.5, "F");
+
+                // Progress Bar Fill
+                doc.setFillColor(41, 128, 185);
+                doc.roundedRect(x + 40, y - 4, (value / 10) * 25, 5, 2.5, 2.5, "F");
+
+                // Value
+                doc.setFontSize(10);
+                doc.setTextColor(0);
+                doc.text(`${value}/10`, x + 50, y);
+            });
+
+            /* --------------------------------------------------
+                NOTES SECTION (perfect spacing)
+               -------------------------------------------------- */
+            if (player.notes) {
+                const notesY = 255 - 35; // corrected position
+
+                doc.setFillColor(255, 255, 255);
+                doc.roundedRect(20, notesY, 170, 40, 5, 5, "F");
+
+                doc.setFontSize(14);
+                doc.text("COACH NOTES", 105, notesY + 10, { align: "center" });
+
+                doc.setFontSize(10);
+                const notesLines = doc.splitTextToSize(player.notes, 160);
+                doc.text(notesLines, 30, notesY + 20);
+            }
+
+            // Footer
+            const today = new Date().toLocaleDateString();
+            doc.setFillColor(41, 128, 185);
+            doc.rect(0, 260, 210, 37, "F");
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.text("TNS Park View FC — Player Performance Report", 105, 275, { align: "center" });
+            doc.text(`Generated on: ${today}`, 105, 285, { align: "center" });
+
+            doc.save(`player-${player.name.replace(/\s+/g, "-")}-report.pdf`);
+        }
+
+        function exportAllPlayersPdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Add gradient background
+            doc.setFillColor(41, 128, 185);
+            doc.rect(0, 0, 210, 297, 'F');
+
+            // Add logo and header with white text
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.text('TNS PARK VIEW FC', 105, 30, { align: 'center' });
+            doc.setFontSize(18);
+            doc.text('TEAM PERFORMANCE REPORT', 105, 45, { align: 'center' });
+
+            // Date in a white box
+            const today = new Date().toLocaleDateString();
+            doc.setFillColor(255, 255, 255);
+            doc.rect(75, 55, 60, 10, 'F');
+            doc.setTextColor(41, 128, 185);
+            doc.setFontSize(12);
+            doc.text(today, 105, 62, { align: 'center' });
+
+            let yPosition = 80;
+            let page = 1;
+
+            // Player cards
+            playersData.forEach((player, index) => {
+                if (yPosition > 200) {
+                    doc.addPage();
+                    yPosition = 20;
+                    page++;
+
+                    // Add background to new page
+                    doc.setFillColor(41, 128, 185);
+                    doc.rect(0, 0, 210, 297, 'F');
+
+                    // Reset yPosition for new page
+                    yPosition = 30;
+                }
+
+                const average = calculatePlayerAverage(player);
+
+                // Player card with white background and rounded corners
+                doc.setFillColor(255, 255, 255);
+                doc.roundedRect(15, yPosition, 180, 120, 8, 8, 'F');
+
+                // Player info
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(14);
+                doc.text(player.name, 25, yPosition + 10);
+                doc.setFontSize(10);
+                doc.text(`Age: ${player.age} | Position: ${player.position}`, 25, yPosition + 18);
+
+                // Rating circle
+                doc.setFillColor(41, 128, 185);
+                doc.circle(170, yPosition + 15, 12, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(10);
+                doc.text(`${average.toFixed(1)}`, 170, yPosition + 18, { align: 'center' });
+
+                // All 8 metrics in a grid
+                const metrics = player.metrics;
+                let metricY = yPosition + 35;
+                let metricX = 25;
+
+                Object.entries(metrics).forEach(([metric, value], idx) => {
+                    if (idx % 2 === 0 && idx > 0) {
+                        metricX = 25;
+                        metricY += 15;
+                    } else if (idx > 0) {
+                        metricX = 110;
+                    }
+
+                    const metricName = metric.charAt(0).toUpperCase() + metric.slice(1);
+                    doc.setFontSize(8);
+                    doc.setTextColor(100);
+                    doc.text(metricName, metricX, metricY);
+
+                    // Progress bar
+                    doc.setDrawColor(200);
+                    doc.setFillColor(230, 230, 230);
+                    doc.roundedRect(metricX + 25, metricY - 3, 30, 4, 2, 2, 'F');
+                    doc.setFillColor(41, 128, 185);
+                    doc.roundedRect(metricX + 25, metricY - 3, (value / 10) * 30, 4, 2, 2, 'F');
+
+                    doc.setTextColor(0);
+                    doc.text(`${value}/10`, metricX + 40, metricY);
+                });
+
+                // Coach notes
+                if (player.notes) {
+                    doc.setFontSize(8);
+                    doc.setTextColor(100);
+                    doc.text('Coach Notes:', 25, metricY + 15);
+
+                    doc.setTextColor(0);
+                    const notesLines = doc.splitTextToSize(player.notes, 160);
+                    doc.text(notesLines, 25, metricY + 22);
+                }
+
+                yPosition += 130;
+            });
+
+            // Footer with gradient
+            doc.setFillColor(41, 128, 185);
+            doc.rect(0, 260, 210, 37, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.text('TNS Park View FC — Team Performance Report', 105, 275, { align: 'center' });
+            doc.text(`Generated on: ${today} | Page ${page}`, 105, 285, { align: 'center' });
+
+            // Save the PDF
+            doc.save(`team-performance-report-${today.replace(/\//g, '-')}.pdf`);
+        }
+
+        function importPlayersData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+                    try {
+                        const importedData = JSON.parse(event.target.result);
+                        if (Array.isArray(importedData)) {
+                            playersData = importedData;
+                            localStorage.setItem('playersData', JSON.stringify(playersData));
+                            renderPlayersTable();
+                            alert('Players data imported successfully!');
+                        } else {
+                            alert('Invalid file format. Please select a valid JSON file.');
+                        }
+                    } catch (error) {
+                        alert('Error parsing JSON file. Please check the file format.');
+                    }
+                };
+
+                reader.readAsText(file);
+            };
+
+            input.click();
+        }
+
+        function clearAllPlayersData() {
+            if (confirm('Are you sure you want to delete all player data? This action cannot be undone.')) {
+                playersData = [];
+                localStorage.setItem('playersData', JSON.stringify(playersData));
+                renderPlayersTable();
+            }
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+
+</html>
