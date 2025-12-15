@@ -3104,14 +3104,36 @@
                     hasNotes = true;
                     notesText = player.notes.trim();
 
-                    // Split notes into lines that fit in the card width
-                    notesLines = doc.splitTextToSize(notesText, contentWidth - 20); // 20mm margin inside card
+                    // FIX: Manual text splitting without "..." issue
+                    const words = notesText.split(' ');
+                    let currentLine = '';
+                    const maxLineWidth = contentWidth - 20; // 20mm margin inside card
+                    const maxCharsPerLine = Math.floor(maxLineWidth / 1.5); // Approximate chars per mm
+
+                    words.forEach(word => {
+                        // Test line with new word
+                        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+
+                        // If adding this word would make line too long
+                        if (testLine.length > maxCharsPerLine && currentLine !== '') {
+                            // Save current line and start new one
+                            notesLines.push(currentLine);
+                            currentLine = word;
+                        } else {
+                            currentLine = testLine;
+                        }
+                    });
+
+                    // Add the last line
+                    if (currentLine) {
+                        notesLines.push(currentLine);
+                    }
 
                     // Limit to 3 lines maximum per card for consistency
                     const maxLinesInCard = 3;
                     if (notesLines.length > maxLinesInCard) {
                         notesLines = notesLines.slice(0, maxLinesInCard);
-                        notesLines[maxLinesInCard - 1] = notesLines[maxLinesInCard - 1].substring(0, 50) + '...';
+                        // Don't add "..." here - let the text naturally truncate
                     }
 
                     // Each notes line takes 4mm height
@@ -3169,7 +3191,7 @@
                 doc.roundedRect(pageWidth - margin - 25, yPos + 4, 20, 8, 4, 4, 'F');
                 doc.text(average.toFixed(1), pageWidth - margin - 15, yPos + 9, { align: 'center' });
 
-                // ALL 8 METRICS (SAME AS BEFORE)
+                // ALL 8 METRICS
                 let metricsY = yPos + 22;
 
                 const metrics = [
@@ -3239,7 +3261,7 @@
                     doc.line(x + 25, y - 1, x + 25 + progressWidth, y - 1);
                 }
 
-                // COACH NOTES - INSIDE CARD, BELOW METRICS
+                // COACH NOTES - FIXED VERSION (NO "..." ISSUE)
                 if (hasNotes && notesLines.length > 0) {
                     const notesStartY = metricsY + 32; // Start notes after all 8 metrics
 
@@ -3261,15 +3283,12 @@
                     doc.setLineWidth(0.3);
                     doc.rect(margin + 5, notesStartY + 1, contentWidth - 10, notesHeight - 5);
 
-                    // Add each notes line
+                    // Add each notes line WITHOUT manually adding "..."
                     notesLines.forEach((line, lineIndex) => {
                         const lineY = notesStartY + 4 + (lineIndex * 4);
-                        // Ensure line fits within the notes box
-                        let displayLine = line;
-                        if (displayLine.length > 80) {
-                            displayLine = displayLine.substring(0, 77) + '...';
-                        }
-                        doc.text(displayLine, margin + 8, lineY);
+
+                        // Just display the line as is
+                        doc.text(line, margin + 8, lineY);
                     });
                 }
 
@@ -3342,7 +3361,6 @@
 
             doc.save(`team-report-${new Date().toISOString().slice(0, 10)}.pdf`);
         }
-
 
         // Initialize the application when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
