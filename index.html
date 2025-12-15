@@ -3094,53 +3094,35 @@
                 // CALCULATE BASE CARD HEIGHT (WITHOUT NOTES)
                 let baseCardHeight = 55; // Header + 8 metrics
 
-                // CALCULATE NOTES LINES AND HEIGHT
-                let notesText = '';
+                // CALCULATE ALL NOTES LINES
+                let allNotesLines = [];
                 let notesLines = [];
                 let notesHeight = 0;
                 let hasNotes = false;
 
                 if (player.notes && player.notes.trim()) {
                     hasNotes = true;
-                    notesText = player.notes.trim();
+                    const notesText = player.notes.trim();
 
-                    // FIX: Manual text splitting without "..." issue
-                    const words = notesText.split(' ');
-                    let currentLine = '';
-                    const maxLineWidth = contentWidth - 20; // 20mm margin inside card
-                    const maxCharsPerLine = Math.floor(maxLineWidth / 1.5); // Approximate chars per mm
+                    // Get ALL lines first
+                    allNotesLines = doc.splitTextToSize(notesText, contentWidth - 25);
 
-                    words.forEach(word => {
-                        // Test line with new word
-                        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                    // Calculate how many lines we can actually show
+                    // First check how much space we have on current page
+                    const availableSpaceOnPage = pageHeight - 25 - yPos;
+                    const maxLinesPossible = Math.floor((availableSpaceOnPage - baseCardHeight) / 4);
 
-                        // If adding this word would make line too long
-                        if (testLine.length > maxCharsPerLine && currentLine !== '') {
-                            // Save current line and start new one
-                            notesLines.push(currentLine);
-                            currentLine = word;
-                        } else {
-                            currentLine = testLine;
-                        }
-                    });
+                    // We'll show either maxLinesPossible or 5, whichever is smaller
+                    const maxLinesToShow = Math.min(maxLinesPossible, 5);
 
-                    // Add the last line
-                    if (currentLine) {
-                        notesLines.push(currentLine);
-                    }
-
-                    // Limit to 3 lines maximum per card for consistency
-                    const maxLinesInCard = 3;
-                    if (notesLines.length > maxLinesInCard) {
-                        notesLines = notesLines.slice(0, maxLinesInCard);
-                        // Don't add "..." here - let the text naturally truncate
-                    }
+                    // Take only the lines that will fit
+                    notesLines = allNotesLines.slice(0, maxLinesToShow);
 
                     // Each notes line takes 4mm height
                     notesHeight = (notesLines.length * 4) + 6; // +6 for "Notes:" label and spacing
                 }
 
-                // TOTAL CARD HEIGHT
+                // TOTAL CARD HEIGHT (dynamic based on available space)
                 const totalCardHeight = baseCardHeight + notesHeight;
 
                 // CHECK PAGE SPACE
@@ -3153,6 +3135,21 @@
                     doc.setTextColor(108, 117, 125);
                     doc.text(`Team Performance Report - Page ${page}`, pageWidth / 2, yPos, { align: 'center' });
                     yPos += 15;
+
+                    // Recalculate notes for new page
+                    if (hasNotes) {
+                        // Get ALL lines again for new page
+                        const notesText = player.notes.trim();
+                        allNotesLines = doc.splitTextToSize(notesText, contentWidth - 25);
+
+                        // Calculate available space on new page
+                        const availableSpaceOnNewPage = pageHeight - 25 - yPos;
+                        const maxLinesPossible = Math.floor((availableSpaceOnNewPage - baseCardHeight) / 4);
+                        const maxLinesToShow = Math.min(maxLinesPossible, 5);
+
+                        notesLines = allNotesLines.slice(0, maxLinesToShow);
+                        notesHeight = (notesLines.length * 4) + 6;
+                    }
                 }
 
                 // PLAYER CARD BORDER
@@ -3261,7 +3258,7 @@
                     doc.line(x + 25, y - 1, x + 25 + progressWidth, y - 1);
                 }
 
-                // COACH NOTES - FIXED VERSION (NO "..." ISSUE)
+                // COACH NOTES - SHOW AS MANY LINES AS POSSIBLE
                 if (hasNotes && notesLines.length > 0) {
                     const notesStartY = metricsY + 32; // Start notes after all 8 metrics
 
@@ -3283,13 +3280,17 @@
                     doc.setLineWidth(0.3);
                     doc.rect(margin + 5, notesStartY + 1, contentWidth - 10, notesHeight - 5);
 
-                    // Add each notes line WITHOUT manually adding "..."
+                    // Add each notes line
                     notesLines.forEach((line, lineIndex) => {
                         const lineY = notesStartY + 4 + (lineIndex * 4);
-
-                        // Just display the line as is
                         doc.text(line, margin + 8, lineY);
                     });
+
+                    // If there are more lines than we could show
+                    if (allNotesLines.length > notesLines.length) {
+                        const lastLineY = notesStartY + 4 + (notesLines.length * 4);
+                        doc.text('... (more notes)', margin + 8, lastLineY);
+                    }
                 }
 
                 // Add subtle separator at bottom of card
@@ -3361,7 +3362,6 @@
 
             doc.save(`team-report-${new Date().toISOString().slice(0, 10)}.pdf`);
         }
-
         // Initialize the application when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
