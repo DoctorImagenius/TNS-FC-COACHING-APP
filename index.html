@@ -1899,179 +1899,6 @@
             }
         }
 
-        function exportAttendancePdf() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            const today = new Date().toDateString();
-            const todayData = attendanceData[today];
-
-            if (!todayData) return;
-
-            // Add gradient background
-            doc.setFillColor(41, 128, 185);
-            doc.rect(0, 0, 210, 297, 'F');
-
-            // Add logo and header with white text
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(24);
-            doc.text('TNS PARK VIEW FC', 105, 30, { align: 'center' });
-            doc.setFontSize(18);
-            doc.text('ATTENDANCE REPORT', 105, 45, { align: 'center' });
-
-            // Add date in a white box
-            doc.setFillColor(255, 255, 255);
-            doc.rect(75, 55, 60, 10, 'F');
-            doc.setTextColor(41, 128, 185);
-            doc.setFontSize(12);
-            doc.text(today, 105, 62, { align: 'center' });
-
-            // Content area with white background
-            doc.setFillColor(255, 255, 255);
-            doc.rect(10, 75, 190, 180, 'F');
-            doc.setTextColor(0, 0, 0);
-
-            // Create table header
-            doc.setFillColor(41, 128, 185);
-            doc.rect(15, 85, 180, 10, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(12);
-            doc.text('Player Name', 25, 92);
-            doc.text('Status', 150, 92);
-
-            let yPosition = 100;
-            let rowCount = 0;
-
-            // Present players
-            const presentPlayers = todayData.players.filter(p => p.status === 'present');
-            if (presentPlayers.length > 0) {
-                doc.setTextColor(46, 204, 113);
-                doc.text('PRESENT PLAYERS', 20, yPosition);
-                yPosition += 8;
-
-                doc.setTextColor(0, 0, 0);
-                presentPlayers.forEach(player => {
-                    if (rowCount % 2 === 0) {
-                        doc.setFillColor(245, 245, 245);
-                        doc.rect(15, yPosition - 4, 180, 8, 'F');
-                    }
-
-                    doc.text(player.name, 25, yPosition);
-                    doc.setTextColor(46, 204, 113);
-                    doc.text('PRESENT', 150, yPosition);
-                    doc.setTextColor(0, 0, 0);
-
-                    yPosition += 8;
-                    rowCount++;
-
-                    if (yPosition > 240) {
-                        doc.addPage();
-                        yPosition = 20;
-                        doc.setFillColor(255, 255, 255);
-                        doc.rect(10, 10, 190, 277, 'F');
-                        yPosition = 30;
-                    }
-                });
-                yPosition += 5;
-            }
-
-            // Absent players
-            const absentPlayers = todayData.players.filter(p => p.status === 'absent');
-            if (absentPlayers.length > 0) {
-                doc.setTextColor(231, 76, 60);
-                doc.text('ABSENT PLAYERS', 20, yPosition);
-                yPosition += 8;
-
-                doc.setTextColor(0, 0, 0);
-                absentPlayers.forEach(player => {
-                    if (rowCount % 2 === 0) {
-                        doc.setFillColor(245, 245, 245);
-                        doc.rect(15, yPosition - 4, 180, 8, 'F');
-                    }
-
-                    doc.text(player.name, 25, yPosition);
-                    doc.setTextColor(231, 76, 60);
-                    doc.text('ABSENT', 150, yPosition);
-                    doc.setTextColor(0, 0, 0);
-
-                    yPosition += 8;
-                    rowCount++;
-
-                    if (yPosition > 240) {
-                        doc.addPage();
-                        yPosition = 20;
-                        doc.setFillColor(255, 255, 255);
-                        doc.rect(10, 10, 190, 277, 'F');
-                        yPosition = 30;
-                    }
-                });
-                yPosition += 5;
-            }
-
-            // Late players
-            const latePlayers = todayData.players.filter(p => p.status === 'late');
-            if (latePlayers.length > 0) {
-                doc.setTextColor(243, 156, 18);
-                doc.text('LATE PLAYERS', 20, yPosition);
-                yPosition += 8;
-
-                doc.setTextColor(0, 0, 0);
-                latePlayers.forEach(player => {
-                    if (rowCount % 2 === 0) {
-                        doc.setFillColor(245, 245, 245);
-                        doc.rect(15, yPosition - 4, 180, 8, 'F');
-                    }
-
-                    doc.text(player.name, 25, yPosition);
-                    doc.setTextColor(243, 156, 18);
-                    doc.text('LATE', 150, yPosition);
-                    doc.setTextColor(0, 0, 0);
-
-                    yPosition += 8;
-                    rowCount++;
-
-                    if (yPosition > 240) {
-                        doc.addPage();
-                        yPosition = 20;
-                        doc.setFillColor(255, 255, 255);
-                        doc.rect(10, 10, 190, 277, 'F');
-                        yPosition = 30;
-                    }
-                });
-            }
-
-            // Summary
-            yPosition += 10;
-            doc.setDrawColor(200);
-            doc.line(15, yPosition, 195, yPosition);
-            yPosition += 10;
-
-            doc.setFontSize(12);
-            doc.setTextColor(41, 128, 185);
-            doc.text('SUMMARY', 20, yPosition);
-            yPosition += 8;
-
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Total Players: ${todayData.players.length}`, 25, yPosition);
-            yPosition += 6;
-            doc.text(`Present: ${presentPlayers.length}`, 25, yPosition);
-            yPosition += 6;
-            doc.text(`Absent: ${absentPlayers.length}`, 25, yPosition);
-            yPosition += 6;
-            doc.text(`Late: ${latePlayers.length}`, 25, yPosition);
-
-            // Footer with gradient
-            doc.setFillColor(41, 128, 185);
-            doc.rect(0, 260, 210, 37, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.text('Generated for TNS Park View FC — Head Coach', 105, 275, { align: 'center' });
-            doc.text(today, 105, 285, { align: 'center' });
-
-            // Save the PDF
-            doc.save(`attendance-${today.replace(/ /g, '-')}.pdf`);
-        }
-
         function exportAttendanceText() {
             const today = new Date().toDateString();
             const todayData = attendanceData[today];
@@ -2533,92 +2360,6 @@
             }
         }
 
-        function exportSessionPlanPdf() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            // Add gradient background
-            doc.setFillColor(41, 128, 185);
-            doc.rect(0, 0, 210, 297, 'F');
-
-            // Add logo and header with white text
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(24);
-            doc.text('TNS PARK VIEW FC', 105, 30, { align: 'center' });
-            doc.setFontSize(18);
-            doc.text('TRAINING SESSION PLAN', 105, 45, { align: 'center' });
-
-            // Add date in a white box
-            const today = new Date().toLocaleDateString();
-            doc.setFillColor(255, 255, 255);
-            doc.rect(75, 55, 60, 10, 'F');
-            doc.setTextColor(41, 128, 185);
-            doc.setFontSize(12);
-            doc.text(today, 105, 62, { align: 'center' });
-
-            // Content area with white background
-            doc.setFillColor(255, 255, 255);
-            doc.rect(10, 75, 190, 200, 'F');
-            doc.setTextColor(0, 0, 0);
-
-            let yPosition = 90;
-            let totalTime = 0;
-
-            // Session details in a detailed format
-            trainingSessions.forEach((session, index) => {
-                if (yPosition > 250) {
-                    doc.addPage();
-                    yPosition = 20;
-
-                    // Add background to new page
-                    doc.setFillColor(41, 128, 185);
-                    doc.rect(0, 0, 210, 297, 'F');
-
-                    // Content area
-                    doc.setFillColor(255, 255, 255);
-                    doc.rect(10, 10, 190, 277, 'F');
-                    doc.setTextColor(0, 0, 0);
-                    yPosition = 25;
-                }
-
-                // Session header with background
-                doc.setFillColor(41, 128, 185);
-                doc.rect(15, yPosition - 5, 180, 15, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(12);
-                doc.text(`Session ${index + 1}: ${session.title} (${session.duration} minutes)`, 25, yPosition + 3);
-
-                yPosition += 15;
-
-                // Session description
-                doc.setFillColor(245, 245, 245);
-                doc.rect(15, yPosition, 180, 30, 'F');
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(10);
-                const descriptionLines = doc.splitTextToSize(session.description, 170);
-                doc.text(descriptionLines, 20, yPosition + 7);
-
-                yPosition += 35;
-                totalTime += session.duration;
-            });
-
-            // Total time
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`Total Training Time: ${totalTime} minutes`, 20, yPosition + 10);
-
-            // Footer with gradient
-            doc.setFillColor(41, 128, 185);
-            doc.rect(0, 260, 210, 37, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.text('Generated for TNS Park View FC — Head Coach', 105, 275, { align: 'center' });
-            doc.text(today, 105, 285, { align: 'center' });
-
-            // Save the PDF
-            doc.save(`training-plan-${today.replace(/\//g, '-')}.pdf`);
-        }
-
         // Dashboard Module Functions
         function renderPlayersTable() {
             playersTable.innerHTML = '';
@@ -2833,242 +2574,6 @@
             return sum / values.length;
         }
 
-        function exportPlayerPdf(playerId) {
-            const player = playersData.find(p => p.id === playerId);
-            if (!player) return;
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF("p", "mm", "a4");
-
-            const average = calculatePlayerAverage(player);
-
-            // Background
-            doc.setFillColor(41, 128, 185);
-            doc.rect(0, 0, 210, 297, "F");
-
-            // Header
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(24);
-            doc.text("TNS PARK VIEW FC", 105, 30, { align: "center" });
-            doc.setFontSize(18);
-            doc.text("PLAYER PERFORMANCE REPORT", 105, 45, { align: "center" });
-
-            // Player Info Card
-            doc.setFillColor(255, 255, 255);
-            doc.roundedRect(20, 60, 170, 50, 5, 5, "F");
-
-            doc.setTextColor(0);
-            doc.setFontSize(14);
-            doc.text(`Name: ${player.name}`, 30, 75);
-            doc.text(`Age: ${player.age}`, 30, 85);
-            doc.text(`Position: ${player.position}`, 30, 95);
-
-            // Rating Circle
-            doc.setFillColor(41, 128, 185);
-            doc.circle(160, 80, 15, "F");
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(12);
-            doc.text(`${average.toFixed(1)}`, 160, 83, { align: "center" });
-            doc.setFontSize(8);
-            doc.text("RATING", 160, 90, { align: "center" });
-
-            /* --------------------------------------------------
-               PERFECT METRICS SECTION 
-               8 metrics → 2 columns × 4 rows
-               -------------------------------------------------- */
-            doc.setFillColor(255, 255, 255);
-            doc.roundedRect(20, 125, 170, 125, 5, 5, "F"); // PERFECT height
-
-            doc.setTextColor(0);
-            doc.setFontSize(16);
-            doc.text("PERFORMANCE METRICS", 105, 140, { align: "center" });
-
-            const metrics = player.metrics;
-
-            // FIXED GRID POSITIONS
-            const col1 = 30;
-            const col2 = 115;
-            let startY = 160;
-            const rowGap = 14; // PERFECT for exactly 4 rows
-
-            const metricEntries = Object.entries(metrics);
-
-            metricEntries.forEach(([metric, value], i) => {
-                const isLeft = (i % 2 === 0);
-                const x = isLeft ? col1 : col2;
-                const y = startY + Math.floor(i / 2) * rowGap;
-
-
-                // Metric Box
-                doc.setFillColor(245, 245, 245);
-                doc.roundedRect(x, y - 8, 70, 20, 3, 3, "F");
-
-                // Title
-                doc.setFontSize(10);
-                doc.setTextColor(100);
-                const metricName = metric.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-                doc.text(`${metricName}:`, x + 5, y);
-
-                // Progress Bar Background
-                doc.setFillColor(230, 230, 230);
-                doc.roundedRect(x + 40, y - 4, 25, 5, 2.5, 2.5, "F");
-
-                // Progress Bar Fill
-                doc.setFillColor(41, 128, 185);
-                doc.roundedRect(x + 40, y - 4, (value / 10) * 25, 5, 2.5, 2.5, "F");
-
-                // Value
-                doc.setFontSize(10);
-                doc.setTextColor(0);
-                doc.text(`${value}/10`, x + 50, y);
-            });
-
-            /* --------------------------------------------------
-                NOTES SECTION (perfect spacing)
-               -------------------------------------------------- */
-            if (player.notes) {
-                const notesY = 255 - 35; // corrected position
-
-                doc.setFillColor(255, 255, 255);
-                doc.roundedRect(20, notesY, 170, 40, 5, 5, "F");
-
-                doc.setFontSize(14);
-                doc.text("COACH NOTES", 105, notesY + 10, { align: "center" });
-
-                doc.setFontSize(10);
-                const notesLines = doc.splitTextToSize(player.notes, 160);
-                doc.text(notesLines, 30, notesY + 20);
-            }
-
-            // Footer
-            const today = new Date().toLocaleDateString();
-            doc.setFillColor(41, 128, 185);
-            doc.rect(0, 260, 210, 37, "F");
-
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.text("TNS Park View FC — Player Performance Report", 105, 275, { align: "center" });
-            doc.text(`Generated on: ${today}`, 105, 285, { align: "center" });
-
-            doc.save(`player-${player.name.replace(/\s+/g, "-")}-report.pdf`);
-        }
-
-        function exportAllPlayersPdf() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            // Add gradient background
-            doc.setFillColor(41, 128, 185);
-            doc.rect(0, 0, 210, 297, 'F');
-
-            // Add logo and header with white text
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(24);
-            doc.text('TNS PARK VIEW FC', 105, 30, { align: 'center' });
-            doc.setFontSize(18);
-            doc.text('TEAM PERFORMANCE REPORT', 105, 45, { align: 'center' });
-
-            // Date in a white box
-            const today = new Date().toLocaleDateString();
-            doc.setFillColor(255, 255, 255);
-            doc.rect(75, 55, 60, 10, 'F');
-            doc.setTextColor(41, 128, 185);
-            doc.setFontSize(12);
-            doc.text(today, 105, 62, { align: 'center' });
-
-            let yPosition = 80;
-            let page = 1;
-
-            // Player cards
-            playersData.forEach((player, index) => {
-                if (yPosition > 200) {
-                    doc.addPage();
-                    yPosition = 20;
-                    page++;
-
-                    // Add background to new page
-                    doc.setFillColor(41, 128, 185);
-                    doc.rect(0, 0, 210, 297, 'F');
-
-                    // Reset yPosition for new page
-                    yPosition = 30;
-                }
-
-                const average = calculatePlayerAverage(player);
-
-                // Player card with white background and rounded corners
-                doc.setFillColor(255, 255, 255);
-                doc.roundedRect(15, yPosition, 180, 120, 8, 8, 'F');
-
-                // Player info
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(14);
-                doc.text(player.name, 25, yPosition + 10);
-                doc.setFontSize(10);
-                doc.text(`Age: ${player.age} | Position: ${player.position}`, 25, yPosition + 18);
-
-                // Rating circle
-                doc.setFillColor(41, 128, 185);
-                doc.circle(170, yPosition + 15, 12, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(10);
-                doc.text(`${average.toFixed(1)}`, 170, yPosition + 18, { align: 'center' });
-
-                // All 8 metrics in a grid
-                const metrics = player.metrics;
-                let metricY = yPosition + 35;
-                let metricX = 25;
-
-                Object.entries(metrics).forEach(([metric, value], idx) => {
-                    if (idx % 2 === 0 && idx > 0) {
-                        metricX = 25;
-                        metricY += 15;
-                    } else if (idx > 0) {
-                        metricX = 110;
-                    }
-
-                    const metricName = metric.charAt(0).toUpperCase() + metric.slice(1);
-                    doc.setFontSize(8);
-                    doc.setTextColor(100);
-                    doc.text(metricName, metricX, metricY);
-
-                    // Progress bar
-                    doc.setDrawColor(200);
-                    doc.setFillColor(230, 230, 230);
-                    doc.roundedRect(metricX + 25, metricY - 3, 30, 4, 2, 2, 'F');
-                    doc.setFillColor(41, 128, 185);
-                    doc.roundedRect(metricX + 25, metricY - 3, (value / 10) * 30, 4, 2, 2, 'F');
-
-                    doc.setTextColor(0);
-                    doc.text(`${value}/10`, metricX + 40, metricY);
-                });
-
-                // Coach notes
-                if (player.notes) {
-                    doc.setFontSize(8);
-                    doc.setTextColor(100);
-                    doc.text('Coach Notes:', 25, metricY + 15);
-
-                    doc.setTextColor(0);
-                    const notesLines = doc.splitTextToSize(player.notes, 160);
-                    doc.text(notesLines, 25, metricY + 22);
-                }
-
-                yPosition += 130;
-            });
-
-            // Footer with gradient
-            doc.setFillColor(41, 128, 185);
-            doc.rect(0, 260, 210, 37, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.text('TNS Park View FC — Team Performance Report', 105, 275, { align: 'center' });
-            doc.text(`Generated on: ${today} | Page ${page}`, 105, 285, { align: 'center' });
-
-            // Save the PDF
-            doc.save(`team-performance-report-${today.replace(/\//g, '-')}.pdf`);
-        }
-
         function importPlayersData() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -3107,6 +2612,737 @@
                 renderPlayersTable();
             }
         }
+
+        // Updated PDF Export Functions
+
+        function exportAttendancePdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const today = new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const todayData = attendanceData[new Date().toDateString()];
+
+            if (!todayData) return;
+
+            // Set page margins
+            const margin = 20;
+            let yPos = margin;
+
+            // Header with club name
+            doc.setFillColor(240, 240, 240); // Light gray background
+            doc.rect(0, 0, 210, 40, 'F');
+
+            doc.setFontSize(24);
+            doc.setTextColor(44, 62, 80); // Dark gray text
+            doc.text('TNS PARK VIEW FC', 105, 25, { align: 'center' });
+
+            doc.setFontSize(16);
+            doc.setTextColor(108, 117, 125); // Medium gray
+            doc.text('TRAINING ATTENDANCE REPORT', 105, 35, { align: 'center' });
+
+            yPos = 50;
+
+            // Date
+            doc.setFontSize(12);
+            doc.setTextColor(108, 117, 125);
+            doc.text(today, 105, yPos, { align: 'center' });
+            yPos += 15;
+
+            // Stats section
+            const present = todayData.players.filter(p => p.status === 'present').length;
+            const absent = todayData.players.filter(p => p.status === 'absent').length;
+            const late = todayData.players.filter(p => p.status === 'late').length;
+            const total = todayData.players.length;
+
+            // Stats grid
+            const stats = [
+                { label: 'Total Players', value: total, color: [108, 117, 125] },
+                { label: 'Present', value: present, color: [25, 135, 84] },
+                { label: 'Absent', value: absent, color: [220, 53, 69] },
+                { label: 'Late', value: late, color: [255, 193, 7] }
+            ];
+
+            const statWidth = 42.5;
+            stats.forEach((stat, index) => {
+                const x = margin + (index * statWidth);
+
+                // Stat box
+                doc.setFillColor(248, 249, 250); // Very light gray
+                doc.roundedRect(x, yPos, statWidth - 2.5, 30, 3, 3, 'F');
+                doc.setDrawColor(233, 236, 239); // Light border
+                doc.roundedRect(x, yPos, statWidth - 2.5, 30, 3, 3, 'S');
+
+                // Stat value
+                doc.setFontSize(18);
+                doc.setTextColor(stat.color[0], stat.color[1], stat.color[2]);
+                doc.text(stat.value.toString(), x + (statWidth - 2.5) / 2, yPos + 15, { align: 'center' });
+
+                // Stat label
+                doc.setFontSize(8);
+                doc.setTextColor(73, 80, 87);
+                doc.text(stat.label, x + (statWidth - 2.5) / 2, yPos + 25, { align: 'center' });
+            });
+
+            yPos += 45;
+
+            // Attendance table header
+            doc.setFillColor(233, 236, 239);
+            doc.rect(margin, yPos, 170, 10, 'F');
+
+            doc.setFontSize(10);
+            doc.setTextColor(73, 80, 87);
+            doc.text('Player Name', margin + 5, yPos + 7);
+            doc.text('Status', margin + 150, yPos + 7);
+
+            yPos += 15;
+
+            // Group players by status
+            const playersByStatus = {
+                present: todayData.players.filter(p => p.status === 'present'),
+                absent: todayData.players.filter(p => p.status === 'absent'),
+                late: todayData.players.filter(p => p.status === 'late'),
+                unmarked: todayData.players.filter(p => !p.status)
+            };
+
+            // Add each group with header
+            Object.entries(playersByStatus).forEach(([status, players]) => {
+                if (players.length > 0) {
+                    // Status header
+                    let statusText = '';
+                    let statusColor = [108, 117, 125]; // Default gray
+
+                    switch (status) {
+                        case 'present':
+                            statusText = 'PRESENT';
+                            statusColor = [25, 135, 84]; // Green
+                            break;
+                        case 'absent':
+                            statusText = 'ABSENT';
+                            statusColor = [220, 53, 69]; // Red
+                            break;
+                        case 'late':
+                            statusText = 'LATE';
+                            statusColor = [255, 193, 7]; // Yellow
+                            break;
+                        case 'unmarked':
+                            statusText = 'NOT MARKED';
+                            statusColor = [108, 117, 125]; // Gray
+                            break;
+                    }
+
+                    doc.setFontSize(11);
+                    doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+                    doc.text(statusText, margin, yPos);
+                    yPos += 8;
+
+                    // Players in this status
+                    players.forEach((player, index) => {
+                        // Alternate row colors
+                        if (index % 2 === 0) {
+                            doc.setFillColor(248, 249, 250);
+                            doc.rect(margin, yPos - 4, 170, 8, 'F');
+                        }
+
+                        doc.setFontSize(10);
+                        doc.setTextColor(33, 37, 41);
+                        doc.text(player.name, margin + 5, yPos);
+
+                        doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+                        doc.text(statusText, margin + 150, yPos);
+
+                        yPos += 8;
+
+                        // Check if we need a new page
+                        if (yPos > 280) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                    });
+
+                    yPos += 5;
+                }
+            });
+
+            // Footer
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setFontSize(10);
+            doc.setTextColor(108, 117, 125);
+            doc.text('Generated for TNS Park View FC — Head Coach', 105, pageHeight - 20, { align: 'center' });
+            doc.text(new Date().toLocaleDateString(), 105, pageHeight - 15, { align: 'center' });
+
+            // Save the PDF
+            doc.save(`attendance-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+        }
+
+        function exportSessionPlanPdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const today = new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Header
+            doc.setFillColor(240, 240, 240);
+            doc.rect(0, 0, 210, 40, 'F');
+
+            doc.setFontSize(24);
+            doc.setTextColor(44, 62, 80);
+            doc.text('TNS PARK VIEW FC', 105, 25, { align: 'center' });
+
+            doc.setFontSize(16);
+            doc.setTextColor(108, 117, 125);
+            doc.text('TRAINING SESSION PLAN', 105, 35, { align: 'center' });
+
+            let yPos = 50;
+
+            // Date
+            doc.setFontSize(12);
+            doc.text(today, 105, yPos, { align: 'center' });
+            yPos += 20;
+
+            // Calculate total time
+            const totalTime = trainingSessions.reduce((total, session) => total + session.duration, 0);
+
+            // Total time badge
+            doc.setFillColor(248, 249, 250);
+            doc.roundedRect(80, yPos, 50, 15, 7.5, 7.5, 'F');
+            doc.setDrawColor(206, 212, 218);
+            doc.roundedRect(80, yPos, 50, 15, 7.5, 7.5, 'S');
+
+            doc.setFontSize(12);
+            doc.setTextColor(73, 80, 87);
+            doc.text(`Total: ${totalTime} min`, 105, yPos + 9, { align: 'center' });
+
+            yPos += 30;
+
+            // Sessions - DYNAMIC HEIGHT VERSION
+            trainingSessions.forEach((session, index) => {
+                // First, calculate how much space this session needs
+                const descLines = doc.splitTextToSize(session.description, 140); // 140mm width
+
+                // Calculate required height: 
+                // Base card height = 35mm (for title and basic info)
+                // Each description line = 4mm
+                // Extra spacing = 5mm
+                const descHeight = descLines.length * 4;
+                const sessionCardHeight = 35 + Math.max(0, descHeight - 10) + 5;
+
+                // Check if we need a new page BEFORE drawing the card
+                if (yPos + sessionCardHeight > 280) { // 280mm for A4 page (leave room for footer)
+                    doc.addPage();
+                    yPos = 20;
+                }
+
+                // Session card with DYNAMIC HEIGHT
+                doc.setFillColor(248, 249, 250);
+                doc.roundedRect(20, yPos, 170, sessionCardHeight, 5, 5, 'F');
+                doc.setDrawColor(233, 236, 239);
+                doc.roundedRect(20, yPos, 170, sessionCardHeight, 5, 5, 'S');
+
+                // Left border accent
+                doc.setFillColor(173, 181, 189);
+                doc.rect(20, yPos, 5, sessionCardHeight, 'F');
+
+                // Session number and title
+                doc.setFontSize(12);
+                doc.setTextColor(44, 62, 80);
+
+                // Truncate title if too long
+                let displayTitle = session.title;
+                if (session.title.length > 40) {
+                    displayTitle = session.title.substring(0, 37) + '...';
+                }
+                doc.text(`Session ${index + 1}: ${displayTitle}`, 30, yPos + 12);
+
+                // Duration badge
+                doc.setFillColor(248, 249, 250);
+                doc.roundedRect(155, yPos + 7, 25, 10, 5, 5, 'F');
+                doc.setDrawColor(233, 236, 239);
+                doc.roundedRect(155, yPos + 7, 25, 10, 5, 5, 'S');
+                doc.setFontSize(8);
+                doc.setTextColor(73, 80, 87);
+                doc.text(`${session.duration}m`, 167.5, yPos + 13.5, { align: 'center' });
+
+                // Description - with proper bounds checking
+                doc.setFontSize(9);
+                doc.setTextColor(108, 117, 125);
+
+                // Calculate max lines that can fit in the card
+                const maxLinesInCard = Math.floor((sessionCardHeight - 25) / 4);
+                const displayLines = descLines.slice(0, maxLinesInCard);
+
+                // Add ellipsis if there are more lines
+                if (descLines.length > maxLinesInCard) {
+                    displayLines[maxLinesInCard - 1] = displayLines[maxLinesInCard - 1].substring(0, 50) + '...';
+                }
+
+                doc.text(displayLines, 30, yPos + 23);
+
+                // Move to next position
+                yPos += sessionCardHeight + 10; // Add spacing between sessions
+            });
+
+            // Footer
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setFontSize(10);
+            doc.setTextColor(108, 117, 125);
+            doc.text('Generated for TNS Park View FC — Head Coach', 105, pageHeight - 20, { align: 'center' });
+            doc.text(new Date().toLocaleDateString(), 105, pageHeight - 15, { align: 'center' });
+
+            doc.save(`training-plan-${new Date().toISOString().slice(0, 10)}.pdf`);
+        }
+
+        function exportPlayerPdf(playerId) {
+            const player = playersData.find(p => p.id === playerId);
+            if (!player) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const today = new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            const average = calculatePlayerAverage(player);
+
+            // Header
+            doc.setFillColor(240, 240, 240);
+            doc.rect(0, 0, 210, 40, 'F');
+
+            doc.setFontSize(24);
+            doc.setTextColor(44, 62, 80);
+            doc.text('TNS PARK VIEW FC', 105, 25, { align: 'center' });
+
+            doc.setFontSize(16);
+            doc.setTextColor(108, 117, 125);
+            doc.text('PLAYER PERFORMANCE REPORT', 105, 35, { align: 'center' });
+
+            let yPos = 50;
+
+            // Player info card
+            doc.setFillColor(248, 249, 250);
+            doc.roundedRect(20, yPos, 170, 50, 5, 5, 'F');
+            doc.setDrawColor(233, 236, 239);
+            doc.roundedRect(20, yPos, 170, 50, 5, 5, 'S');
+
+            // Left accent border
+            doc.setFillColor(173, 181, 189);
+            doc.rect(20, yPos, 5, 50, 'F');
+
+            // Player info
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.text(player.name, 35, yPos + 15);
+
+            doc.setFontSize(10);
+            doc.setTextColor(108, 117, 125);
+            doc.text(`Age: ${player.age} | Position: ${player.position}`, 35, yPos + 25);
+
+            // Average rating circle
+            doc.setFillColor(233, 236, 239);
+            doc.circle(170, yPos + 25, 15, 'F');
+            doc.setDrawColor(206, 212, 218);
+            doc.circle(170, yPos + 25, 15, 'S');
+
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.text(average.toFixed(1), 170, yPos + 28, { align: 'center' });
+
+            doc.setFontSize(8);
+            doc.text('AVG', 170, yPos + 33, { align: 'center' });
+
+            yPos += 65;
+
+            // Performance metrics header
+            doc.setFontSize(12);
+            doc.setTextColor(73, 80, 87);
+            doc.text('PERFORMANCE METRICS', 105, yPos, { align: 'center' });
+            yPos += 10;
+
+            // Metrics grid (2 columns x 4 rows)
+            const metrics = player.metrics;
+            const metricEntries = Object.entries(metrics);
+
+            const col1X = 30;
+            const col2X = 115;
+            let rowY = yPos;
+
+            metricEntries.forEach(([metric, value], index) => {
+                const isLeftColumn = index % 2 === 0;
+                const x = isLeftColumn ? col1X : col2X;
+                const y = rowY + Math.floor(index / 2) * 20;
+
+                // Metric name
+                const metricName = metric.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                doc.setFontSize(9);
+                doc.setTextColor(73, 80, 87);
+                doc.text(metricName, x, y);
+
+                // Progress bar background
+                doc.setFillColor(233, 236, 239);
+                doc.roundedRect(x, y + 3, 50, 6, 3, 3, 'F');
+                doc.setDrawColor(206, 212, 218);
+                doc.roundedRect(x, y + 3, 50, 6, 3, 3, 'S');
+
+                // Progress bar fill (light gray instead of blue)
+                doc.setFillColor(173, 181, 189);
+                doc.roundedRect(x, y + 3, (value / 10) * 50, 6, 3, 3, 'F');
+
+                // Value
+                doc.setFontSize(9);
+                doc.setTextColor(44, 62, 80);
+                doc.text(`${value}/10`, x + 55, y + 7);
+            });
+
+            yPos += 90;
+
+            // Coach notes if available
+            if (player.notes && player.notes.trim()) {
+                doc.setFontSize(11);
+                doc.setTextColor(73, 80, 87);
+                doc.text('COACH NOTES', 105, yPos, { align: 'center' });
+                yPos += 8;
+
+                doc.setFillColor(248, 249, 250);
+                doc.roundedRect(20, yPos, 170, 40, 5, 5, 'F');
+                doc.setDrawColor(233, 236, 239);
+                doc.roundedRect(20, yPos, 170, 40, 5, 5, 'S');
+
+                doc.setFontSize(9);
+                doc.setTextColor(73, 80, 87);
+                const notesLines = doc.splitTextToSize(player.notes, 160);
+                doc.text(notesLines, 25, yPos + 8);
+
+                yPos += 50;
+            }
+
+            // Footer
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setFontSize(10);
+            doc.setTextColor(108, 117, 125);
+            doc.text('Generated for TNS Park View FC — Head Coach', 105, pageHeight - 20, { align: 'center' });
+            doc.text(today, 105, pageHeight - 15, { align: 'center' });
+
+            doc.save(`player-${player.name.replace(/\s+/g, '-')}-report.pdf`);
+        }
+
+        function exportAllPlayersPdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            const today = new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            let yPos = 15;
+            let page = 1;
+            const pageWidth = 210;
+            const pageHeight = 297;
+            const margin = 15;
+            const contentWidth = pageWidth - (2 * margin);
+
+            // SIMPLE HEADER
+            doc.setFontSize(20);
+            doc.setTextColor(44, 62, 80);
+            doc.text('TNS PARK VIEW FC', pageWidth / 2, yPos, { align: 'center' });
+
+            doc.setFontSize(14);
+            doc.setTextColor(108, 117, 125);
+            doc.text('Team Performance Report', pageWidth / 2, yPos + 8, { align: 'center' });
+
+            yPos += 20;
+
+            // TEAM SUMMARY
+            if (playersData.length > 0) {
+                const totalPlayers = playersData.length;
+                const avgAge = playersData.reduce((sum, player) => sum + player.age, 0) / totalPlayers;
+                const avgRating = playersData.reduce((sum, player) => sum + calculatePlayerAverage(player), 0) / totalPlayers;
+
+                doc.setFontSize(10);
+                doc.setTextColor(73, 80, 87);
+                doc.text(`Total Players: ${totalPlayers}`, margin, yPos);
+                doc.text(`Average Age: ${avgAge.toFixed(1)}`, margin + 70, yPos);
+                doc.text(`Average Rating: ${avgRating.toFixed(1)}/10`, margin + 140, yPos);
+
+                yPos += 15;
+
+                doc.setDrawColor(233, 236, 239);
+                doc.line(margin, yPos, pageWidth - margin, yPos);
+
+                yPos += 10;
+            }
+
+            // PLAYER CARDS
+            playersData.forEach((player, index) => {
+                const average = calculatePlayerAverage(player);
+
+                // CALCULATE BASE CARD HEIGHT (WITHOUT NOTES)
+                let baseCardHeight = 55; // Header + 8 metrics
+
+                // CALCULATE NOTES LINES AND HEIGHT
+                let notesText = '';
+                let notesLines = [];
+                let notesHeight = 0;
+                let hasNotes = false;
+
+                if (player.notes && player.notes.trim()) {
+                    hasNotes = true;
+                    notesText = player.notes.trim();
+
+                    // Split notes into lines that fit in the card width
+                    notesLines = doc.splitTextToSize(notesText, contentWidth - 20); // 20mm margin inside card
+
+                    // Limit to 3 lines maximum per card for consistency
+                    const maxLinesInCard = 3;
+                    if (notesLines.length > maxLinesInCard) {
+                        notesLines = notesLines.slice(0, maxLinesInCard);
+                        notesLines[maxLinesInCard - 1] = notesLines[maxLinesInCard - 1].substring(0, 50) + '...';
+                    }
+
+                    // Each notes line takes 4mm height
+                    notesHeight = (notesLines.length * 4) + 6; // +6 for "Notes:" label and spacing
+                }
+
+                // TOTAL CARD HEIGHT
+                const totalCardHeight = baseCardHeight + notesHeight;
+
+                // CHECK PAGE SPACE
+                if (yPos + totalCardHeight > pageHeight - 25) {
+                    doc.addPage();
+                    page++;
+                    yPos = 15;
+
+                    doc.setFontSize(12);
+                    doc.setTextColor(108, 117, 125);
+                    doc.text(`Team Performance Report - Page ${page}`, pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 15;
+                }
+
+                // PLAYER CARD BORDER
+                doc.setDrawColor(206, 212, 218);
+                doc.setLineWidth(0.3);
+                doc.rect(margin, yPos, contentWidth, totalCardHeight);
+
+                // PLAYER HEADER
+                doc.setFillColor(248, 249, 250);
+                doc.rect(margin, yPos, contentWidth, 15, 'F');
+
+                // Player name
+                doc.setFontSize(11);
+                doc.setTextColor(44, 62, 80);
+                let playerName = player.name;
+                if (playerName.length > 25) {
+                    playerName = playerName.substring(0, 22) + '...';
+                }
+                doc.text(playerName, margin + 5, yPos + 10);
+
+                // Player details
+                doc.setFontSize(9);
+                doc.setTextColor(108, 117, 125);
+                doc.text(`${player.age} years | ${player.position}`, margin + 80, yPos + 10);
+
+                // Average rating
+                doc.setFontSize(10);
+                doc.setTextColor(255, 255, 255);
+
+                let ratingBgColor = [108, 117, 125];
+                if (average >= 8) ratingBgColor = [25, 135, 84];
+                else if (average >= 6) ratingBgColor = [13, 110, 253];
+                else if (average >= 4) ratingBgColor = [255, 193, 7];
+
+                doc.setFillColor(ratingBgColor[0], ratingBgColor[1], ratingBgColor[2]);
+                doc.roundedRect(pageWidth - margin - 25, yPos + 4, 20, 8, 4, 4, 'F');
+                doc.text(average.toFixed(1), pageWidth - margin - 15, yPos + 9, { align: 'center' });
+
+                // ALL 8 METRICS (SAME AS BEFORE)
+                let metricsY = yPos + 22;
+
+                const metrics = [
+                    { name: 'Controls', value: player.metrics.controls },
+                    { name: 'Passing', value: player.metrics.passing },
+                    { name: 'Dribbling', value: player.metrics.dribbling },
+                    { name: 'Shooting', value: player.metrics.shooting },
+                    { name: 'Defence', value: player.metrics.defence },
+                    { name: 'Stamina', value: player.metrics.stamina },
+                    { name: 'Performance', value: player.metrics.performance },
+                    { name: 'Attacking', value: player.metrics.attacking }
+                ];
+
+                // Left column (first 4 metrics)
+                for (let i = 0; i < 4; i++) {
+                    const metric = metrics[i];
+                    const x = margin + 5;
+                    const y = metricsY + (i * 7);
+
+                    doc.setFontSize(8);
+                    doc.setTextColor(73, 80, 87);
+
+                    let metricName = metric.name;
+                    if (metricName.length > 12) {
+                        metricName = metricName.substring(0, 10) + '..';
+                    }
+                    doc.text(`${metricName}:`, x, y);
+
+                    doc.setTextColor(44, 62, 80);
+                    doc.text(`${metric.value}/10`, x + 40, y);
+
+                    doc.setDrawColor(233, 236, 239);
+                    doc.setLineWidth(0.5);
+                    doc.line(x + 25, y - 1, x + 35, y - 1);
+
+                    const progressWidth = (metric.value / 10) * 10;
+                    doc.setDrawColor(ratingBgColor[0], ratingBgColor[1], ratingBgColor[2]);
+                    doc.setLineWidth(1);
+                    doc.line(x + 25, y - 1, x + 25 + progressWidth, y - 1);
+                }
+
+                // Right column (last 4 metrics)
+                for (let i = 4; i < 8; i++) {
+                    const metric = metrics[i];
+                    const x = margin + 105;
+                    const y = metricsY + ((i - 4) * 7);
+
+                    doc.setFontSize(8);
+                    doc.setTextColor(73, 80, 87);
+
+                    let metricName = metric.name;
+                    if (metricName.length > 12) {
+                        metricName = metricName.substring(0, 10) + '..';
+                    }
+                    doc.text(`${metricName}:`, x, y);
+
+                    doc.setTextColor(44, 62, 80);
+                    doc.text(`${metric.value}/10`, x + 40, y);
+
+                    doc.setDrawColor(233, 236, 239);
+                    doc.setLineWidth(0.5);
+                    doc.line(x + 25, y - 1, x + 35, y - 1);
+
+                    const progressWidth = (metric.value / 10) * 10;
+                    doc.setDrawColor(ratingBgColor[0], ratingBgColor[1], ratingBgColor[2]);
+                    doc.setLineWidth(1);
+                    doc.line(x + 25, y - 1, x + 25 + progressWidth, y - 1);
+                }
+
+                // COACH NOTES - INSIDE CARD, BELOW METRICS
+                if (hasNotes && notesLines.length > 0) {
+                    const notesStartY = metricsY + 32; // Start notes after all 8 metrics
+
+                    // Notes label
+                    doc.setFontSize(8);
+                    doc.setTextColor(73, 80, 87);
+                    doc.text('Notes:', margin + 5, notesStartY);
+
+                    // Notes text (as paragraph)
+                    doc.setFontSize(7);
+                    doc.setTextColor(108, 117, 125);
+
+                    // Draw a subtle background for notes area
+                    doc.setFillColor(250, 250, 250);
+                    doc.rect(margin + 5, notesStartY + 1, contentWidth - 10, notesHeight - 5, 'F');
+
+                    // Draw notes border
+                    doc.setDrawColor(233, 236, 239);
+                    doc.setLineWidth(0.3);
+                    doc.rect(margin + 5, notesStartY + 1, contentWidth - 10, notesHeight - 5);
+
+                    // Add each notes line
+                    notesLines.forEach((line, lineIndex) => {
+                        const lineY = notesStartY + 4 + (lineIndex * 4);
+                        // Ensure line fits within the notes box
+                        let displayLine = line;
+                        if (displayLine.length > 80) {
+                            displayLine = displayLine.substring(0, 77) + '...';
+                        }
+                        doc.text(displayLine, margin + 8, lineY);
+                    });
+                }
+
+                // Add subtle separator at bottom of card
+                doc.setDrawColor(240, 240, 240);
+                doc.setLineWidth(0.5);
+                doc.line(margin + 5, yPos + totalCardHeight - 1, pageWidth - margin - 5, yPos + totalCardHeight - 1);
+
+                yPos += totalCardHeight + 5; // Space between cards
+            });
+
+            // TEAM SUMMARY AT END
+            if (playersData.length > 0 && yPos < pageHeight - 60) {
+                doc.setDrawColor(233, 236, 239);
+                doc.line(margin, yPos, pageWidth - margin, yPos);
+                yPos += 10;
+
+                doc.setFontSize(11);
+                doc.setTextColor(44, 62, 80);
+                doc.text('Team Performance Averages', margin, yPos);
+                yPos += 8;
+
+                const totalPlayers = playersData.length;
+                const metricAverages = {};
+                const metricNames = ['controls', 'passing', 'dribbling', 'shooting', 'defence', 'stamina', 'performance', 'attacking'];
+
+                metricNames.forEach(metric => {
+                    metricAverages[metric] = playersData.reduce((sum, player) => sum + player.metrics[metric], 0) / totalPlayers;
+                });
+
+                let col1Y = yPos;
+                let col2Y = yPos;
+
+                metricNames.forEach((metric, index) => {
+                    const avg = metricAverages[metric];
+                    const metricName = metric.charAt(0).toUpperCase() + metric.slice(1);
+
+                    if (index < 4) {
+                        doc.setFontSize(8);
+                        doc.setTextColor(73, 80, 87);
+                        doc.text(`${metricName}:`, margin + 5, col1Y);
+
+                        doc.setTextColor(44, 62, 80);
+                        doc.text(`${avg.toFixed(1)}/10`, margin + 45, col1Y);
+
+                        col1Y += 6;
+                    } else {
+                        doc.setFontSize(8);
+                        doc.setTextColor(73, 80, 87);
+                        doc.text(`${metricName}:`, margin + 105, col2Y);
+
+                        doc.setTextColor(44, 62, 80);
+                        doc.text(`${avg.toFixed(1)}/10`, margin + 145, col2Y);
+
+                        col2Y += 6;
+                    }
+                });
+            }
+
+            // FOOTER
+            doc.setFontSize(8);
+            doc.setTextColor(108, 117, 125);
+
+            doc.setDrawColor(233, 236, 239);
+            doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+
+            doc.text('TNS Park View FC', margin, pageHeight - 10);
+            doc.text(`Page ${page}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+            doc.text(today, pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+            doc.save(`team-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+        }
+
 
         // Initialize the application when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
